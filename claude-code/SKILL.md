@@ -170,11 +170,9 @@ Report whether a retrieved entry worked in the caller's context.
 
 ### Optional tools
 
-**`runlog_status`** — Check the current status and confidence score of a specific entry by `unit_id`. Useful before deciding whether to rely on an entry with low confidence or to re-verify.
+**`runlog_status`** — Check the current status and confidence score of a specific entry by `unit_id`. Useful before deciding whether to rely on an entry with low confidence or to re-verify. *Optional — not exposed in v0.1; arrives in Phase 1.*
 
-**`runlog_submitter_stats`** — View the calling key's trust score, submission history, and current rate-limit usage. Scoped to the authenticated key; cannot view other submitters' stats.
-
-Both optional tools require authentication and count against the `status` rate-limit bucket (1000/day).
+**`runlog_submitter_stats`** — View the calling key's trust score, submission history, and current rate-limit usage. Scoped to the authenticated key; cannot view other submitters' stats. *Optional — not exposed in v0.1; arrives in Phase 1.*
 
 ## Example: A Real Call Cycle
 
@@ -207,13 +205,23 @@ Both optional tools require authentication and count against the `status` rate-l
     "entry_id": "stripe-webhook-signature-tolerance-too-strict",
     "outcome": "success",
     "session_manifest": {
-      "entries_used": ["stripe-webhook-signature-tolerance-too-strict"],
-      "runtime": {"name": "python", "version": "3.12.3"},
-      "packages": [{"name": "stripe", "version": "9.2.0"}]
+      "version": "1",
+      "retrieved_at": "2026-04-26T10:23:45Z",
+      "entries": [
+        {
+          "kb_id": "stripe-webhook-signature-tolerance-too-strict",
+          "retrieved": "2026-04-26T10:15:02Z",
+          "status": "unverified"
+        }
+      ],
+      "client": {"name": "claude-code", "version": "1.0.0"},
+      "runtime": {"language": "python", "language_version": "3.12.3"}
     }
   }
 }
 ```
+
+The `session_manifest` tells the server which Runlog entries the agent consulted during this session, so the trust system can correlate entry usage with downstream success or failure. `version` must be `"1"`, `retrieved_at` is the RFC-3339 timestamp of the report call, and each item in `entries` carries the `kb_id` (the entry's `unit_id`), when it was retrieved, and its status at retrieval time.
 
 The `runlog_report` call is what makes the trust system work. Each confirmed success raises the entry's confidence score, weighted by how different the reporting context is from prior confirmations.
 
@@ -359,7 +367,7 @@ v0.1 enforces per-key sliding-window quotas. All windows are 24 hours.
 | `runlog_search` | 1000 / day |
 | `runlog_submit` | 50 / day |
 | `runlog_report` | 500 / day |
-| `runlog_status` | 1000 / day |
+| `runlog_status` | 1000 / day (Phase 1; not in v0.1) |
 
 When a limit is exceeded the server returns HTTP 429 with a response body containing `error.type: "rate_limit"` and `error.retry_after_seconds`. Wait that many seconds before retrying.
 
