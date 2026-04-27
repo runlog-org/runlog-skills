@@ -1,5 +1,7 @@
 # Runlog Skills — MCP Client Skills
 
+> Part of the **[Runlog](https://github.com/runlog-org)** project — see the [project home](https://github.com/runlog-org) for the overview.
+
 **Repo:** [`runlog-org/runlog-skills`](https://github.com/runlog-org/runlog-skills) — public, MIT
 **Content:** Agent skill files and MCP client configs
 **Implements:** [`runlog-docs/07-mcp-interface.md`](https://github.com/runlog-org/runlog-docs/blob/main/07-mcp-interface.md), plus the manifest conventions from [`runlog-docs/03-verification-and-provenance.md`](https://github.com/runlog-org/runlog-docs/blob/main/03-verification-and-provenance.md) §6
