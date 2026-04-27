@@ -52,4 +52,4 @@ For a per-vendor adapter to be conformant:
 - [ ] The "MUST NOT" list is honoured.
 - [ ] Submission flow MUST NOT proceed without a verifier-signed bundle.
 
-Tracker: `[F25]` in the project backlog. References: [`../../docs/07-mcp-interface.md`](../../docs/07-mcp-interface.md) §10.4, [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md), `verifier/internal/verify/`.
+Tracker: `[F25]` in the project backlog. References: [`../../docs/07-mcp-interface.md`](https://github.com/runlog-org/runlog-docs/blob/main/07-mcp-interface.md) §10.4, [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md), `verifier/internal/verify/`.

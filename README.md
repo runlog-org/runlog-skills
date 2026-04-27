@@ -1,8 +1,8 @@
-# skills/ — MCP Client Skills
+# Runlog Skills — MCP Client Skills
 
-**Future repo:** `runlog-skills` — public, MIT (planned)
+**Repo:** [`runlog-org/runlog-skills`](https://github.com/runlog-org/runlog-skills) — public, MIT
 **Content:** Agent skill files and MCP client configs
-**Implements:** [`../docs/07-mcp-interface.md`](../docs/07-mcp-interface.md), plus the manifest conventions from [`../docs/03-verification-and-provenance.md`](../docs/03-verification-and-provenance.md) §6
+**Implements:** [`runlog-docs/07-mcp-interface.md`](https://github.com/runlog-org/runlog-docs/blob/main/07-mcp-interface.md), plus the manifest conventions from [`runlog-docs/03-verification-and-provenance.md`](https://github.com/runlog-org/runlog-docs/blob/main/03-verification-and-provenance.md) §6
 
 Drop-in skill files so agents running Claude Code, Cursor, Cline, Continue, Windsurf, Aider, VS Code Copilot, JetBrains AI Assistant, and Zed can use Runlog without writing their own MCP plumbing. Each skill wraps `runlog_search`, `runlog_submit`, and `runlog_report` with the right framework-specific glue.
 
@@ -106,5 +106,5 @@ Future tooling (a generator script that produces vendor adapters from the canoni
 
 ## Depends on
 
-- [`../schema/`](../schema/) — referenced in documentation only (not as a code dep)
-- [`../verifier/`](../verifier/) — the `runlog-author` skill drives the local verifier binary; without it the write side cannot submit. Build with `cd verifier && make build`.
+- [`runlog-org/runlog-schema`](https://github.com/runlog-org/runlog-schema) — referenced in documentation only (not as a code dep)
+- [`runlog-org/runlog-verifier`](https://github.com/runlog-org/runlog-verifier) — the `runlog-author` skill drives the local verifier binary; without it the write side cannot submit. Build with `git clone … && make build` in the verifier repo.
