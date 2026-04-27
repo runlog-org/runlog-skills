@@ -1,0 +1,11 @@
+{
+  "name": "runlog",
+  "description": "Runlog client skill — calls runlog_search / runlog_submit / runlog_report against api.runlog.org. Bundles the runlog-author write-side skill and auto-registers the Runlog HTTP MCP server.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Runlog",
+    "email": "hello@runlog.org"
+  },
+  "homepage": "https://runlog.org",
+  "license": "MIT"
+}

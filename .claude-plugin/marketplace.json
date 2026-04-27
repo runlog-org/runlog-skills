@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "runlog-org",
+  "description": "Runlog client skills for Claude Code — verified knowledge about third-party APIs, frameworks, and protocols delivered over MCP.",
+  "owner": {
+    "name": "Runlog",
+    "email": "hello@runlog.org",
+    "url": "https://runlog.org"
+  },
+  "plugins": [
+    {
+      "name": "runlog",
+      "source": "./",
+      "description": "Runlog MCP client skills (read + write) plus auto-registration of the Runlog HTTP MCP server.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Runlog",
+        "email": "hello@runlog.org"
+      },
+      "homepage": "https://runlog.org",
+      "category": "knowledge"
+    }
+  ]
+}

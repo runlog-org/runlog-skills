@@ -1,0 +1,39 @@
+{
+  "name": "@runlog/install",
+  "version": "0.1.0",
+  "description": "Install the Runlog client skill for your agent framework (Claude Code, Cursor, Cline, Continue, Windsurf, Aider, Copilot, JetBrains, Zed).",
+  "bin": {
+    "runlog-install": "./index.js"
+  },
+  "main": "./index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT",
+  "keywords": [
+    "runlog",
+    "mcp",
+    "skill",
+    "agent",
+    "claude-code",
+    "cursor",
+    "cline",
+    "continue",
+    "windsurf",
+    "aider",
+    "copilot",
+    "jetbrains",
+    "zed"
+  ],
+  "homepage": "https://runlog.org",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/runlog-org/runlog-skills.git",
+    "directory": "installer"
+  },
+  "author": "Runlog <hello@runlog.org>",
+  "files": [
+    "index.js",
+    "README.md"
+  ]
+}

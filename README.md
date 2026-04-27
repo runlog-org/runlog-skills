@@ -28,6 +28,37 @@ All 9 vendor adapters (Claude Code + 8 cross-vendor expansion) are operational o
 
 Asterisks (`*`) flag adapters whose MCP integration is evolving in the upstream vendor — the adapter is shipped and works against today's vendor capabilities, but check the per-vendor README's "VERIFY" notes against current vendor docs before publishing your config.
 
+## Install
+
+Three install paths, in order of preference for a given vendor:
+
+### 1. Claude Code: plugin marketplace (recommended)
+
+Claude Code users get the smoothest install — the plugin auto-registers the Runlog MCP server, so no manual MCP config edits:
+
+```
+/plugin marketplace add runlog-org/runlog-skills
+/plugin install runlog
+```
+
+Then `export RUNLOG_API_KEY=sk-runlog-<your-key>` (key from <https://runlog.org/register>) and the `runlog` and `runlog-author` skills are available in any session.
+
+### 2. Any vendor: `npx @runlog/install <vendor>`
+
+```sh
+# Print the rule + MCP config for review
+npx @runlog/install cursor
+
+# Or write directly to the vendor's rules path
+npx @runlog/install cursor --write
+```
+
+Vendors: `claude-code`, `cursor`, `cline`, `continue`, `windsurf`, `aider`, `copilot`, `jetbrains`, `zed`. The installer fetches the canonical `SKILL.md` from this repo's `main` and writes it to the right vendor-specific path (or prints it for vendors that share a single rules file with the user's other content). It does **not** auto-edit your MCP config — it prints the snippet for you to merge in. See [`installer/README.md`](./installer/README.md) for full flag reference.
+
+### 3. Manual: clone + copy
+
+The original install model still works — each per-vendor folder's README has a `Quickstart` section that walks through `cp <vendor>/SKILL.md <target-path>` plus the MCP config to add. Use this if you want to read the rule before installing it, or your environment doesn't have npm.
+
 ## Cross-vendor expansion strategy — `[F25]`
 
 The defensive moat for Runlog is being the cross-vendor knowledge layer that no single agent platform owns. As LLM vendors ship their own "skills" / "memory" / "knowledge" features, multi-vendor reach is what keeps Runlog relevant rather than getting absorbed into a single ecosystem.
@@ -43,7 +74,18 @@ The `common/` extraction means each vendor adapter references cross-vendor invar
 
 ```
 skills/
-├── claude-code/                            # ✅ Reference adapter (read side)
+├── .claude-plugin/                         # ✅ Claude Code plugin marketplace + plugin manifest
+│   ├── marketplace.json
+│   └── plugin.json
+├── .mcp.json                               # ✅ MCP server registered when plugin installs
+├── skills/                                 # ✅ Plugin-discoverable skills (mirrors of canonical bodies)
+│   ├── runlog/SKILL.md
+│   └── runlog-author/SKILL.md
+├── installer/                              # ✅ npx @runlog/install package source
+│   ├── package.json
+│   ├── index.js
+│   └── README.md
+├── claude-code/                            # ✅ Reference adapter (read side; canonical body)
 │   └── SKILL.md
 ├── runlog-author/                          # ✅ Canonical author body (vendor-agnostic)
 │   ├── SKILL.md
@@ -103,8 +145,22 @@ When the cross-vendor contract changes (e.g. a new MUST-NOT rule or a tool-call 
 1. Update `common/four-point-client-contract.md` and/or `common/runlog-author-contract.md` (single source of truth).
 2. Re-sync each per-vendor SKILL.md / runlog-author.md by re-reading the canonical body and bringing the vendor wrapper in line.
 3. The bodies are deliberately ~80% similar across vendors — the vendor-specific glue is concentrated in the **Setup** sections and a few notes paragraphs.
+4. Re-sync the plugin's discovery copies: `cp claude-code/SKILL.md skills/runlog/SKILL.md` and `cp runlog-author/SKILL.md skills/runlog-author/SKILL.md`. (The `skills/` tree is what Claude Code's plugin loader reads; the canonical bodies stay at their established paths so existing per-vendor wrappers don't need to chase a path move. CIFS doesn't allow symlinks, so they're plain copies.)
+
+The npx installer (`installer/index.js`) fetches `<vendor>/SKILL.md` live from `main` on GitHub at install time, so it always pulls the latest canonical body — no version coupling to maintain.
 
 Future tooling (a generator script that produces vendor adapters from the canonical body + a vendor-glue spec) is a maintenance-pain follow-up; not yet needed at 9 vendors.
+
+### Publishing `@runlog/install` to npm
+
+The npm scope `@runlog` must be claimed before first publish (`npm org create runlog` while logged in as the maintainer, or register a user named `runlog`). Once the scope exists:
+
+```sh
+cd installer
+npm publish --access public
+```
+
+Bump the version in `installer/package.json` for each release. The installer fetches its content from GitHub at runtime, so users always get the latest skill body regardless of which installer version they ran.
 
 ## Depends on
 

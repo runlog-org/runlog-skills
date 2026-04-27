@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "runlog": {
+      "type": "http",
+      "url": "https://api.runlog.org/mcp",
+      "headers": {
+        "Authorization": "Bearer ${RUNLOG_API_KEY}"
+      }
+    }
+  }
+}
