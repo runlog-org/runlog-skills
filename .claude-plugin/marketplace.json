@@ -1,7 +1,8 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "runlog-org",
-  "description": "Runlog client skills for Claude Code — verified knowledge about third-party APIs, frameworks, and protocols delivered over MCP.",
+  "metadata": {
+    "description": "Runlog client skills for Claude Code — verified knowledge about third-party APIs, frameworks, and protocols delivered over MCP."
+  },
   "owner": {
     "name": "Runlog",
     "email": "hello@runlog.org",
