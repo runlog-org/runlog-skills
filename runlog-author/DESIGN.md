@@ -1,12 +1,14 @@
 ---
-name: runlog-author
-description: DRAFT spec for the agent-driven submission skill. Compresses Runlog submission from "hand-write YAML against schema, install Go, manage Ed25519 keypair, iterate on rejection reasons" to "two prompts at the end of a real debugging session." NOT YET IMPLEMENTED.
-status: draft / unbuilt
-companion_to: skills/claude-code/SKILL.md (consume side)
+name: runlog-author-design
+description: Design rationale and open questions for the runlog-author skill. The agent-readable body lives at SKILL.md alongside this file; this document is the rationale a human reads when modifying SKILL.md or porting the skill to a new vendor.
+status: design rationale; companion to SKILL.md
+companion_to: skills/runlog-author/SKILL.md, skills/claude-code/SKILL.md
 related_invariants: CLAUDE.md #1 (scope), #4 (sanitization), #6 (local verification), #9 (cassette capture)
 ---
 
-# runlog-author — Skill Spec (Draft v0)
+# runlog-author — Design Rationale
+
+> The live, agent-readable skill body is at [`./SKILL.md`](./SKILL.md). This document is the design rationale and open questions — read it when modifying `SKILL.md` or porting the skill to a new vendor under `[F25]`. Some content here intentionally overlaps with `SKILL.md`; this file is allowed to be longer because design rationale benefits from extra context.
 
 ## Why this exists
 
@@ -18,9 +20,9 @@ That gap is the dominant adoption blocker for contributions. The verification re
 
 > *Dev hits a third-party-system gotcha; Claude debugs it; gotcha is fixed. User says "publish that." Claude reads the conversation, drafts the YAML, calls the local verifier, fixes whatever the verifier rejected, re-runs until `status: verified`, submits.*
 
-## Scope of this draft
+## Scope of this document
 
-This document specifies the skill's **behaviour and contract**. It does not yet describe the implementation (file layout, MCP wiring, prompt templates) — those land when the skill is actually built. The goal of the draft is to lock the design so the implementation slice has a clear target.
+Originally written to lock the skill's behaviour and contract before implementation. Now retained as design rationale alongside the live `SKILL.md` body — the implementation (file layout, MCP wiring, prompt templates) lives there. Sections that overlap with `SKILL.md` (the four-step flow, the typed-reason → fix-strategy table, the MUST NOT list) are kept here because the rationale behind each rule is load-bearing context when the contract is modified or ported to a new vendor.
 
 ## Pre-conditions assumed of the user's machine
 
@@ -148,10 +150,14 @@ To resolve before implementation:
 
 ## Status
 
-**Unbuilt.** This file is a design draft, not a working skill. Promotion path:
+**Skill body shipped at [`./SKILL.md`](./SKILL.md).** End-to-end functionality is gated on three structural prerequisites that are NOT yet built:
 
-1. This draft → review → promote to a `[F24]`-style feature item in `.hv/TODO.md`.
-2. Implement against the prerequisites above (release artifact + pubkey registration + register UX).
-3. Co-author the first entries through the skill itself as a dogfood loop — the asyncio-TaskGroup gotcha and the pyyaml octal-coercion gotcha are good first targets since both already verify end-to-end through the existing verifier.
+1. **Verifier release artifact** — reproducible-build SHAs published next to the binary so users don't need a Go toolchain.
+2. **Public-key registration flow on the server** — today the API key authenticates the submitter; the bundle's signature is currently trusted blindly. Closing this means `runlog-verifier register` uploads the pubkey and `runlog_submit` validates the bundle signature against the registered key.
+3. **`runlog-verifier register --email` UX** — generates the keypair, uploads the public half, writes `~/.runlog/key` with mode 0600.
 
-Originating discussion: 2026-04-27 conversation about adoption friction on the submission side; user response to "submission is too complex for normal users to contribute."
+Until these three land, the skill operates on the manual workarounds documented in `SKILL.md §Prerequisites` (build the verifier from source, run `runlog-verifier keygen` manually, register the public key out-of-band). The skill body itself is unaffected — pre-flight surfaces a single diagnostic and the user resolves the gap and re-runs.
+
+Dogfood targets when end-to-end ships: the asyncio-TaskGroup gotcha and the pyyaml octal-coercion gotcha — both already verify end-to-end through the existing verifier, so they are the lowest-risk first entries to author through the skill itself.
+
+Originating discussion: 2026-04-27 conversation about adoption friction on the submission side; user response to "submission is too complex for normal users to contribute." Skill body shipped 2026-04-27 (`[F24]`).
