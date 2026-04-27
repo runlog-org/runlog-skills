@@ -5,7 +5,7 @@ description: The four rules every official Runlog MCP client skill MUST follow. 
 
 # The Four-Point Client Contract
 
-The cross-vendor invariant for Runlog client skills. Originating spec: [`../../docs/07-mcp-interface.md`](https://github.com/runlog-org/runlog-docs/blob/main/07-mcp-interface.md) §10.4. Currently embodied in [`../claude-code/SKILL.md`](../claude-code/SKILL.md) (read side) and [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md) (write side). Per-vendor adapters — Cursor, Cline, Continue, Windsurf, Aider, Copilot via MCP, JetBrains AI, Zed — MUST follow these four rules in their own framework. Violating any of them collapses Runlog into a weaker competitor to team-memory tools.
+The cross-vendor invariant for Runlog client skills. Originating spec: `runlog-docs/07-mcp-interface.md` §10.4. Currently embodied in [`../claude-code/SKILL.md`](../claude-code/SKILL.md) (read side) and [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md) (write side). Per-vendor adapters — Cursor, Cline, Continue, Windsurf, Aider, Copilot via MCP, JetBrains AI, Zed — MUST follow these four rules in their own framework. Violating any of them collapses Runlog into a weaker competitor to team-memory tools.
 
 ## The Four Rules
 

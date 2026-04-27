@@ -199,9 +199,9 @@ The skill performs a one-time pre-flight check on first invocation and surfaces 
 | [`../claude-code/SKILL.md`](../claude-code/SKILL.md) | Read-side companion (`runlog_search` / `runlog_report` flow) |
 | [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md) | The cross-vendor read+write client contract |
 | [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md) | Author-side cross-vendor invariants |
-| [`../../docs/04-submission-format.md`](https://github.com/runlog-org/runlog-docs/blob/main/04-submission-format.md) | Full submission spec: entry YAML, placeholders, verification types, cassettes, scope rules |
-| [`../../docs/05-sanitization.md`](https://github.com/runlog-org/runlog-docs/blob/main/05-sanitization.md) | Allow-list pipeline, declared literals, hard-rejects |
-| [`../../docs/03-verification-and-provenance.md`](https://github.com/runlog-org/runlog-docs/blob/main/03-verification-and-provenance.md) | Verifier invariants — differential execution, mutation testing, signed bundles |
+| `runlog-docs/04-submission-format.md` | Full submission spec: entry YAML, placeholders, verification types, cassettes, scope rules |
+| `runlog-docs/05-sanitization.md` | Allow-list pipeline, declared literals, hard-rejects |
+| `runlog-docs/03-verification-and-provenance.md` | Verifier invariants — differential execution, mutation testing, signed bundles |
 | `verifier/internal/verify/` | Source of truth for typed rejection reasons |
 
 ---

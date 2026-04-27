@@ -4,7 +4,7 @@
 
 **Repo:** [`runlog-org/runlog-skills`](https://github.com/runlog-org/runlog-skills) — public, MIT
 **Content:** Agent skill files and MCP client configs
-**Implements:** [`runlog-docs/07-mcp-interface.md`](https://github.com/runlog-org/runlog-docs/blob/main/07-mcp-interface.md), plus the manifest conventions from [`runlog-docs/03-verification-and-provenance.md`](https://github.com/runlog-org/runlog-docs/blob/main/03-verification-and-provenance.md) §6
+**Role:** drop-in adapters that wrap the Runlog MCP tools (`runlog_search`, `runlog_submit`, `runlog_report`) for nine vendor agent frameworks. Each adapter honours the four-point client contract in [`common/four-point-client-contract.md`](./common/four-point-client-contract.md) — team-memory-first, external-only classification, route learnings to the right layer, maintain a dependency manifest.
 
 Drop-in skill files so agents running Claude Code, Cursor, Cline, Continue, Windsurf, Aider, VS Code Copilot, JetBrains AI Assistant, and Zed can use Runlog without writing their own MCP plumbing. Each skill wraps `runlog_search`, `runlog_submit`, and `runlog_report` with the right framework-specific glue.
 
