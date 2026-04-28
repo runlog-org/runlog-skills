@@ -43,7 +43,7 @@ test -f ~/.runlog/key        # Ed25519 keypair generated and registered
 If `runlog-verifier` is missing, instruct the user:
 
 ```sh
-cd $(git rev-parse --show-toplevel) && cd verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/
+git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/
 ```
 
 If `~/.runlog/key` is missing:
@@ -72,7 +72,7 @@ Both heuristic and explicit invocations route into the same four-step flow.
 
 This adapter assumes the read-side Cursor skill is already configured (see `skills/cursor/SKILL.md §Setup`). Beyond that:
 
-1. **Build / install `runlog-verifier`** (one-time): `cd verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. Release-artifact UX is a tracked F24 prerequisite.
+1. **Build / install `runlog-verifier`** (one-time): `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. Release-artifact UX is a tracked F24 prerequisite.
 2. **Generate an Ed25519 keypair**: `runlog-verifier keygen --out ~/.runlog/key`.
 3. **Register the public half against your account**: `runlog-verifier register --email <addr>` (UX is a tracked F24 prerequisite; today the public key is registered manually against the API key's account row).
 4. **Install this adapter as a Cursor rule**:

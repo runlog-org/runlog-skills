@@ -31,7 +31,7 @@ The contract is framework-agnostic. Per-vendor implementation glue varies:
 ## Companion documents
 
 - [`runlog-author-contract.md`](./runlog-author-contract.md) — author-side cross-vendor invariants (extends this contract for the submission flow).
-- `dependency-manifest.md` — wire shape for `session_manifest` (Pydantic model in `server/src/runlog/manifest/spec.py`, JSON Schema at `schema/manifest.schema.yaml`). *Tracked under [F25].*
+- `dependency-manifest.md` — wire shape for `session_manifest` (Pydantic model in `runlog/server/src/runlog/manifest/spec.py`, JSON Schema at `runlog-schema/manifest.schema.yaml`). *Tracked under [F25].*
 - `reporting-conventions.md` — how outcomes are mapped to `runlog_report` calls. *Tracked under [F25].*
 
-The two `*tracked under [F25]*` companions ship as part of the multi-vendor expansion. Today's adapters reference `docs/07-mcp-interface.md §10` and `schema/manifest.schema.yaml` directly until the extracted versions land.
+The two `*tracked under [F25]*` companions ship as part of the multi-vendor expansion. Today's adapters reference `runlog-docs/07-mcp-interface.md §10` and `runlog-schema/manifest.schema.yaml` directly until the extracted versions land.

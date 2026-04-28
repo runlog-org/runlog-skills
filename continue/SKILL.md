@@ -110,7 +110,7 @@ Always call after applying an entry.
 | `session_manifest` | object | no |
 | `error_context` | object | no |
 
-For the manifest wire shape, see `schema/manifest.schema.yaml`.
+For the manifest wire shape, see `runlog-schema/manifest.schema.yaml`.
 
 ## Authoring New Findings
 
@@ -179,7 +179,16 @@ Add to `~/.continue/config.json`:
 
 ### 4. Install this skill as a Continue rule
 
-Continue's `rules` section in `config.yaml` accepts inline rule blocks or `@file` references. The simplest form:
+Continue 1.0+ loads every `.md` file under `.continue/rules/` (workspace) or `~/.continue/rules/` (global) into the agent's context. The simplest install drops the body there:
+
+```sh
+mkdir -p .continue/rules
+cp skills/continue/SKILL.md .continue/rules/runlog.md
+```
+
+This is also the path the `npx @runlog/install continue --write` installer writes to.
+
+For older Continue versions (or when you want everything in one place), Continue's `rules` section in `config.yaml` accepts inline rule blocks or `@file` references:
 
 ```yaml
 rules:
@@ -218,8 +227,8 @@ Server returns HTTP 429 with `error.type: "rate_limit"` and `error.retry_after_s
 |---|---|
 | `skills/runlog-author/SKILL.md` | Submitting verified entries |
 | `skills/common/four-point-client-contract.md` | Cross-vendor contract |
-| `docs/04-submission-format.md` | Entry YAML, placeholders, verification types |
-| `docs/07-mcp-interface.md` | Canonical client contract |
+| `runlog-docs/04-submission-format.md` | Entry YAML, placeholders, verification types |
+| `runlog-docs/07-mcp-interface.md` | Canonical client contract |
 
 ---
 

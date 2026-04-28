@@ -12,7 +12,7 @@ related_invariants: CLAUDE.md #1 (scope), #4 (sanitization), #6 (local verificat
 
 ## Why this exists
 
-Today the **read** side of Runlog is a one-skill, three-step setup (`skills/claude-code/SKILL.md`). The **submit** side is a developer toolchain: install Go, build the verifier, manage an Ed25519 keypair, hand-write YAML against `schema/entry.schema.yaml`, run `runlog-verifier verify`, decode typed rejection reasons, fix, re-run, sign, submit.
+Today the **read** side of Runlog is a one-skill, three-step setup (`skills/claude-code/SKILL.md`). The **submit** side is a developer toolchain: install Go, build the verifier, manage an Ed25519 keypair, hand-write YAML against `runlog-schema/entry.schema.yaml`, run `runlog-verifier verify`, decode typed rejection reasons, fix, re-run, sign, submit.
 
 That gap is the dominant adoption blocker for contributions. The verification requirement itself is structurally necessary (CLAUDE.md invariant #6 — "no humans in the loop" only works if local cryptographic verification gates writes), so the answer is not to weaken verification — the answer is to make the **agent** drive the verifier on the user's behalf, off the back of a real debugging session it just participated in.
 
@@ -28,7 +28,7 @@ Originally written to lock the skill's behaviour and contract before implementat
 
 The skill is permitted to assume — and must check before drafting — the following are present:
 
-1. **`runlog-verifier` binary** on `$PATH`. Phase 2 ships it via reproducible-build CI; Phase 2.5 must publish a release artifact (today: `cd verifier && make build`).
+1. **`runlog-verifier` binary** on `$PATH`. Phase 2 ships it via reproducible-build CI; Phase 2.5 must publish a release artifact (today: `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build`).
 2. **An Ed25519 keypair** at `~/.runlog/key` (private) with the public half registered against the user's account. A companion `runlog-verifier register --email …` flow is the natural enabler — out of scope for this skill, but the skill must surface a clear error when the keypair is missing rather than silently signing with an unregistered key.
 3. **`RUNLOG_API_KEY`** set in the environment (already required by `skills/claude-code/SKILL.md`).
 4. **The runtime the entry exercises.** Python entries need `python3`; sqlite entries need `sqlite3`; postgres entries need `psql`; etc. The verifier orchestrates but **shells out** — so an asyncio-TaskGroup gotcha can't be authored on a machine without Python ≥ 3.11. The skill must detect a `tier_unsupported` / `runtime_tool_not_yet_implemented` rejection and explain it in plain language rather than retrying mechanically.
@@ -39,7 +39,7 @@ The skill must perform a one-time **pre-flight check** on first use that emits a
 
 The skill MUST NOT propose publication on every external-dependency fix. It proposes only when **all** of the following hold:
 
-1. The fix concerns a **third-party system** (CLAUDE.md invariant #1 / `docs/04-submission-format.md §7.0`). Internal code is rejected at submit anyway; do not waste user time drafting.
+1. The fix concerns a **third-party system** (CLAUDE.md invariant #1 / `runlog-docs/04-submission-format.md §7.0`). Internal code is rejected at submit anyway; do not waste user time drafting.
 2. **Team memory does not already cover it.** Mirrors the four-point client contract from `skills/claude-code/SKILL.md` — Runlog is the cross-org blind-spot, not a duplicate of CLAUDE.md / Cursor rules / mem0.
 3. **`runlog_search` did not surface a sufficiently-similar entry** (distance threshold TBD; v0 should err on the side of "search first, then propose if the hit is weak").
 4. The gotcha has a **falsifiable shape** — there's a concrete failed approach, a concrete working approach, and an observable difference. If the fix is "I read the docs more carefully," there's nothing to verify; do not propose.
@@ -56,7 +56,7 @@ When all four hold, the skill emits a one-line prompt to the user: *"Worth publi
 
 ### Step 2 — Draft the entry from session context
 
-Generate `entry.yaml` against `schema/entry.schema.yaml`. The skill must:
+Generate `entry.yaml` against `runlog-schema/entry.schema.yaml`. The skill must:
 
 - **Read the schema** at draft time (do not hardcode; the schema is the cross-language contract and evolves).
 - **Pick the correct `verification.type`**:
@@ -64,9 +64,9 @@ Generate `entry.yaml` against `schema/entry.schema.yaml`. The skill must:
   - `unit` — pure-function gotchas, no external state. Default for language/library behaviour.
   - `integration` mode `replay` — the gotcha involves an HTTP API. Cassette steps are recorded from the conversation's actual exchange.
   - `integration` mode `reexecute` — the gotcha involves a process or DB the verifier can spin up locally (today: `shell` + `sqlite`; Phase 2.5+: `postgres`, `redis`, `git`, `docker`).
-- **Convert real conversation values into placeholders** (`$PAYLOAD`, `$TOKEN`, `$ENDPOINT`, …) per `docs/04-submission-format.md §7`. **Never** inline real credentials, internal hostnames, or PII. Hard-reject layer (`server/src/runlog/sanitize/tokens.py`) catches these at submit, but the skill must not produce them in the first place.
-- **Declare `$LITERAL_N`** entries with a `reason:` for every non-routine literal that survives sanitization (timeouts, magic numbers, status codes). The skill must ask the user to confirm each declared literal's reason in plain language — this is the human-in-the-loop guard against literal abuse described in `docs/05-sanitization.md §8.2`.
-- **Compose at least two mutations** (CLAUDE.md invariant #6 / `docs/03 §5.3` step 4). The skill must include at least one mutation that, when applied, changes outcome (otherwise mutation testing is theatre). Today's verifier surfaces this as `mutation_did_not_discriminate`; the skill should pre-empt by reasoning about which mutation actually invalidates the working approach.
+- **Convert real conversation values into placeholders** (`$PAYLOAD`, `$TOKEN`, `$ENDPOINT`, …) per `runlog-docs/04-submission-format.md §7`. **Never** inline real credentials, internal hostnames, or PII. Hard-reject layer (`runlog/server/src/runlog/sanitize/tokens.py`) catches these at submit, but the skill must not produce them in the first place.
+- **Declare `$LITERAL_N`** entries with a `reason:` for every non-routine literal that survives sanitization (timeouts, magic numbers, status codes). The skill must ask the user to confirm each declared literal's reason in plain language — this is the human-in-the-loop guard against literal abuse described in `runlog-docs/05-sanitization.md §8.2`.
+- **Compose at least two mutations** (CLAUDE.md invariant #6 / `runlog-docs/03-verification-and-provenance.md §5.3` step 4). The skill must include at least one mutation that, when applied, changes outcome (otherwise mutation testing is theatre). Today's verifier surfaces this as `mutation_did_not_discriminate`; the skill should pre-empt by reasoning about which mutation actually invalidates the working approach.
 
 ### Step 3 — Local verification loop
 
@@ -79,7 +79,7 @@ Run `runlog-verifier verify <draft>.yaml` via Bash. Decode the typed result:
 | `status: tier_unsupported` | Surface the named tier/tool/strategy to the user. Either downgrade the entry's verification.type, drop the unsupported mutation, or explain that this gotcha can't be verified yet on the local toolchain. |
 | Non-zero exit, no parseable JSON | Treat as environmental error (verifier missing, key missing, etc.); surface diagnostics, do not retry. |
 
-Typed-reason → fix-strategy table (subset; full set lives in `verifier/internal/verify/`):
+Typed-reason → fix-strategy table (subset; full set lives in `runlog-verifier/internal/verify/`):
 
 | `reason` | Likely fix |
 |---|---|
@@ -114,9 +114,9 @@ On success: confirm to user with the new `entry_id`, status (`verified` end-to-e
 These are derived from the load-bearing invariants — violating them collapses the product:
 
 - **MUST NOT submit unverified.** If the verification loop fails to converge, the skill hands back to the user. The verifier is the gate, not a suggestion. (CLAUDE.md #6.)
-- **MUST NOT inline real credentials, internal hostnames, or PII** in the draft, even if the user requests it. The hard-reject layer catches them server-side; the skill must catch them client-side as a usability matter. (CLAUDE.md #4 / `docs/05-sanitization.md`.)
+- **MUST NOT inline real credentials, internal hostnames, or PII** in the draft, even if the user requests it. The hard-reject layer catches them server-side; the skill must catch them client-side as a usability matter. (CLAUDE.md #4 / `runlog-docs/05-sanitization.md`.)
 - **MUST NOT propose entries that would fail the scope rule.** Internal-code knowledge belongs in team memory; do not draft it. (CLAUDE.md #1.)
-- **MUST NOT silently weaken mutation testing** to make the verifier accept a draft (e.g. by dropping a mutation that fails to discriminate instead of fixing it). Either fix the mutation or report the entry as unauthorable. (CLAUDE.md #6 / `docs/03 §5.3`.)
+- **MUST NOT silently weaken mutation testing** to make the verifier accept a draft (e.g. by dropping a mutation that fails to discriminate instead of fixing it). Either fix the mutation or report the entry as unauthorable. (CLAUDE.md #6 / `runlog-docs/03-verification-and-provenance.md §5.3`.)
 - **MUST NOT replace `skills/claude-code/SKILL.md`.** It is a companion. The read side stays as-is; this skill only fires on the proposal-to-publish path.
 
 ## Out of scope for the v0 implementation
@@ -145,7 +145,7 @@ To resolve before implementation:
 
 - **Where does the skill live in `skills/`?** Probably `skills/runlog-author/SKILL.md` parallel to `claude-code/SKILL.md`, or nested under `claude-code/author/SKILL.md`. The latter signals "this is part of the Claude Code skill family"; the former signals "this is portable across MCP clients." Lean: parallel, since the read-side `runlog` skill is portable too. **Cross-vendor parity** (Cursor, Cline, Continue, Windsurf, Aider, Copilot via MCP, JetBrains AI, Zed) is tracked separately as `[F25]` in `.hv/TODO.md` — the canonical author body lives at `skills/runlog-author/SKILL.md` and per-vendor adapters swap orchestration glue, not the contract.
 - **How does the skill detect "session that produced a publishable gotcha"?** Heuristics-only (recent file edits + recent third-party API/library mentions + a "this works now" signal) or explicit user invocation (`/runlog-publish`)? Lean: both — heuristics propose, explicit always works.
-- **How aggressive should the literal-reason confirmation prompts be?** Too aggressive → users say "publish" and immediately abandon; too lax → submitters rubber-stamp `$LITERAL_N` reasons and the abuse vector in `docs/05 §8.2` opens. Lean: confirm only on declared literals that the sanitizer flagged as "non-routine," not every `$LITERAL_N`.
+- **How aggressive should the literal-reason confirmation prompts be?** Too aggressive → users say "publish" and immediately abandon; too lax → submitters rubber-stamp `$LITERAL_N` reasons and the abuse vector in `runlog-docs/05-sanitization.md §8.2` opens. Lean: confirm only on declared literals that the sanitizer flagged as "non-routine," not every `$LITERAL_N`.
 - **Should the skill fall back to `assertion_only` when verification fails?** Tempting (better than nothing) but corrosive (turns the trust stamp into "the submitter promised") — `assertion_only` should require explicit user opt-in with a warning that the entry won't earn the verified stamp.
 
 ## Status

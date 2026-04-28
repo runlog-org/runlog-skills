@@ -13,7 +13,7 @@ Cross-vendor contract documents that every per-vendor adapter (Claude Code, Curs
 
 Tracked as part of `[F25]` (multi-vendor MCP skill coverage):
 
-- `dependency-manifest.md` — wire shape for `session_manifest` extracted from `schema/manifest.schema.yaml` + `server/src/runlog/manifest/spec.py`. Today's adapters reference the schema/Pydantic spec directly.
+- `dependency-manifest.md` — wire shape for `session_manifest` extracted from `runlog-schema/manifest.schema.yaml` + `runlog/server/src/runlog/manifest/spec.py`. Today's adapters reference the schema/Pydantic spec directly.
 - `reporting-conventions.md` — how outcomes (success / failure / partial) map to `runlog_report` calls, including how each vendor's runtime / language / package signal flows into the manifest.
 
 These extractions land when the second per-vendor adapter ships and the duplication becomes painful — not before.

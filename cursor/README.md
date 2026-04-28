@@ -42,7 +42,7 @@ Cursor adapter of the Runlog client skills. Cursor is the highest-priority vendo
    ```sh
    cp skills/cursor/runlog-author.md .cursor/rules/runlog-author.mdc
    ```
-   Then build the verifier (`cd verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`) and generate a keypair (`runlog-verifier keygen --out ~/.runlog/key`).
+   Then build the verifier (`git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`) and generate a keypair (`runlog-verifier keygen --out ~/.runlog/key`).
 
 5. **Verify** — open Settings → Cursor Settings → MCP. `runlog` should show as connected with three tools.
 

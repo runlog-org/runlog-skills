@@ -125,13 +125,13 @@ Find knowledge entries relevant to an external-dependency problem.
 
 Contribute a new finding about a third-party system's behaviour.
 
-**When to call:** After independently solving an external-dependency problem and confirming the learning is generic (not specific to the team's codebase). The entry must conform to `schema/entry.schema.yaml`.
+**When to call:** After independently solving an external-dependency problem and confirming the learning is generic (not specific to the team's codebase). The entry must conform to `runlog-schema/entry.schema.yaml`.
 
 **Key parameters:**
 
 | Parameter | Type | Required | Notes |
 |---|---|---|---|
-| `entry` | object | yes | Full entry payload per `schema/entry.schema.yaml` |
+| `entry` | object | yes | Full entry payload per `runlog-schema/entry.schema.yaml` |
 | `verification_signature` | object | no | Signed bundle from the verifier. In v0.1, submit `{"v0.1_stub": true}` or omit; entry lands at `status="unverified"`. |
 
 **Success response:** Object with `entry_id`, `status` (`"unverified"` in v0.1), and `estimated_verification_threshold`.
@@ -140,12 +140,12 @@ Contribute a new finding about a third-party system's behaviour.
 
 | `error.type` | Cause | Action |
 |---|---|---|
-| `schema_validation` | Entry does not conform to the schema | Fix the entry against `schema/entry.schema.yaml` |
+| `schema_validation` | Entry does not conform to the schema | Fix the entry against `runlog-schema/entry.schema.yaml` |
 | `scope_rule` | A `domain` tag could not be resolved to a public source | Re-check that every domain tag refers to a third-party system, not internal code |
 | `contamination` | Entry contains credentials, PII, or private keys | Remove the contaminating tokens; hard-rejects cannot be declared as `$LITERAL_N` |
 | `rate_limit` | Quota exhausted | Wait `retry_after_seconds` |
 
-**Scope-rule note:** The server checks that every `domain` tag resolves to a published package registry, documented public API, open-source repo, or standards body. Tags that reference internal or private systems are rejected. See `docs/04-submission-format.md §7.0`.
+**Scope-rule note:** The server checks that every `domain` tag resolves to a published package registry, documented public API, open-source repo, or standards body. Tags that reference internal or private systems are rejected. See `runlog-docs/04-submission-format.md §7.0`.
 
 ---
 
@@ -161,7 +161,7 @@ Report whether a retrieved entry worked in the caller's context.
 |---|---|---|---|
 | `entry_id` | string | yes | The `unit_id` of the entry being reported on |
 | `outcome` | string | yes | `"success"` or `"failure"` |
-| `session_manifest` | object | no | Dependency manifest for provenance tracking (see `docs/03-verification-and-provenance.md §6`) |
+| `session_manifest` | object | no | Dependency manifest for provenance tracking (see `runlog-docs/03-verification-and-provenance.md §6`) |
 | `error_context` | object | no | Optional error details; include for failure outcomes |
 
 **Success response:** Object with `acknowledged`, `entry_id`, `updated_confidence`, and `new_status`.
@@ -235,11 +235,11 @@ When an agent independently solves an external-dependency problem that is not ye
 2. The learning would be useful to a team that has never worked with the codebase before — if it requires knowledge of internal conventions to make sense, it belongs in team memory instead.
 3. The entry uses placeholder variables (`$PAYLOAD`, `$TOKEN`, `$CREDENTIAL`, etc.) rather than any real value. Real credentials, PII, or private keys are hard-rejected by the sanitizer even when declared as `$LITERAL_N`.
 
-**Format the entry** per `schema/entry.schema.yaml`. The schema is the authoritative constraint. Do not inline it here — consult the file directly. The top-level required fields are: `unit_id`, `domain`, `version_constraints`, `failed_approach`, `working_approach`, `verification`.
+**Format the entry** per `runlog-schema/entry.schema.yaml`. The schema is the authoritative constraint. Do not inline it here — consult the file directly. The top-level required fields are: `unit_id`, `domain`, `version_constraints`, `failed_approach`, `working_approach`, `verification`.
 
 **Verification signature in v0.1:** The signed verifier ships in Phase 2. For v0.1, pass `{"v0.1_stub": true}` as `verification_signature` or omit the field entirely. The entry lands at `status="unverified"` and gains confidence through field telemetry until the verifier signs it.
 
-**Example submission call (abbreviated — see `schema/entry.schema.yaml` for the full shape):**
+**Example submission call (abbreviated — see `runlog-schema/entry.schema.yaml` for the full shape):**
 
 ```json
 {
@@ -322,7 +322,7 @@ Add the following to `~/.claude/settings.json` under `mcpServers`:
 {
   "mcpServers": {
     "runlog": {
-      "transport": "http",
+      "type": "http",
       "url": "https://api.runlog.org/mcp",
       "headers": {
         "Authorization": "Bearer ${RUNLOG_API_KEY}"
@@ -338,7 +338,7 @@ If Claude Code's config does not support environment variable interpolation in h
 {
   "mcpServers": {
     "runlog": {
-      "transport": "http",
+      "type": "http",
       "url": "https://api.runlog.org/mcp",
       "headers": {
         "Authorization": "Bearer sk-runlog-<your-key>"
@@ -377,17 +377,17 @@ Limits scale with trust score in Phase 2. New keys start at base quota.
 
 - **Signed verifier deferred to Phase 2.** Submitted entries land at `status="unverified"` until field telemetry confirms them. Trust is built through reported outcomes, not cryptographic proof, until the verifier ships.
 - **Cassette capture for integration entries deferred to Phase 2.** Integration-tier submissions (live API/RPC exchange) are telemetry-only in v0.1. The signed agent that records and strips the HTTP cassette is not yet deployed. Integration entries are accepted but their cassette field is a stub.
-- **Full default-deny allow-list deferred to Phase 1.** v0.1 uses a coarse hard-reject blocklist for credentials and PII rather than the full per-submission allow-list described in `docs/05-sanitization.md`. False positives are possible; the trade-off is intentional — a coarse blocklist that never leaks credentials is preferable to a precise allow-list that ships late.
+- **Full default-deny allow-list deferred to Phase 1.** v0.1 uses a coarse hard-reject blocklist for credentials and PII rather than the full per-submission allow-list described in `runlog-docs/05-sanitization.md`. False positives are possible; the trade-off is intentional — a coarse blocklist that never leaks credentials is preferable to a precise allow-list that ships late.
 - **Web UI and dashboards are not in v0.1.** Registration, key issuance, and stats are CLI/API-only.
 
 ## Further Reading
 
 | Document | Read when working on |
 |---|---|
-| `docs/02-architecture.md` | Entry lifecycle, trust tiers, confidence decay |
-| `docs/04-submission-format.md` | Full submission spec: entry YAML, placeholders, verification types, cassettes, scope rules |
-| `docs/07-mcp-interface.md` | Canonical client contract this skill implements |
-| `docs/10-open-questions.md` | Known unknowns and unresolved design questions |
+| `runlog-docs/02-architecture.md` | Entry lifecycle, trust tiers, confidence decay |
+| `runlog-docs/04-submission-format.md` | Full submission spec: entry YAML, placeholders, verification types, cassettes, scope rules |
+| `runlog-docs/07-mcp-interface.md` | Canonical client contract this skill implements |
+| `runlog-docs/10-open-questions.md` | Known unknowns and unresolved design questions |
 
 ---
 

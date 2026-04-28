@@ -124,13 +124,13 @@ Report whether a retrieved entry worked in the caller's context. **Always call**
 | `session_manifest` | object | no | Dependency manifest for provenance tracking |
 | `error_context` | object | no | Optional error details; include for failure outcomes |
 
-For the manifest wire shape, see `schema/manifest.schema.yaml`. Cursor adapters typically carry the manifest in agent-loop state across turns and flush on exit / on report.
+For the manifest wire shape, see `runlog-schema/manifest.schema.yaml`. Cursor adapters typically carry the manifest in agent-loop state across turns and flush on exit / on report.
 
 ## Authoring New Findings
 
 When you independently solve an external-dependency problem that is not yet in Runlog, run the companion `runlog-author` skill to draft, locally verify, sign, and submit the entry. Canonical body: `skills/runlog-author/SKILL.md`. The Cursor wrapper lives at `skills/cursor/runlog-author.md` and adds Cursor-specific orchestration glue (how the agent invokes the verifier through Cursor's tool-use API, agent-loop iteration on verifier rejections).
 
-The verifier requirement is structural — `CLAUDE.md` invariant #6 ("verification happens on the submitter's machine") and `docs/03-verification-and-provenance.md §5.3` step 4. Direct `runlog_submit` without a verifier-signed bundle lands the entry as `unverified` (lower trust); the author skill makes it `verified` end-to-end.
+The verifier requirement is structural — `CLAUDE.md` invariant #6 ("verification happens on the submitter's machine") and `runlog-docs/03-verification-and-provenance.md §5.3` step 4. Direct `runlog_submit` without a verifier-signed bundle lands the entry as `unverified` (lower trust); the author skill makes it `verified` end-to-end.
 
 ## Setup
 
@@ -215,8 +215,8 @@ When a limit is exceeded the server returns HTTP 429 with `error.type: "rate_lim
 |---|---|
 | `skills/runlog-author/SKILL.md` | Submitting verified entries |
 | `skills/common/four-point-client-contract.md` | The cross-vendor contract |
-| `docs/04-submission-format.md` | Entry YAML, placeholders, verification types |
-| `docs/07-mcp-interface.md` | Canonical client contract |
+| `runlog-docs/04-submission-format.md` | Entry YAML, placeholders, verification types |
+| `runlog-docs/07-mcp-interface.md` | Canonical client contract |
 
 ---
 

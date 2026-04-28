@@ -46,7 +46,7 @@ If terminal-tool access is not available in the installed AI Assistant version, 
 
 This adapter assumes the read-side JetBrains skill is already configured (see `skills/jetbrains/SKILL.md §Setup`). Beyond that:
 
-1. **Build / install `runlog-verifier`** (one-time): `cd verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. F24 release-artifact UX is tracked.
+1. **Build / install `runlog-verifier`** (one-time): `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. F24 release-artifact UX is tracked.
 2. **Generate an Ed25519 keypair**: `runlog-verifier keygen --out ~/.runlog/key`.
 3. **Register the public half**: `runlog-verifier register --email <addr>` (UX tracked under F24).
 4. **Add this adapter to the project's AI guidelines** (or as a custom prompt) — same surface as the read skill (Settings → Tools → AI Assistant → Guidelines, or the project-scoped guidelines file).

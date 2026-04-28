@@ -85,7 +85,7 @@ Canonical: `skills/common/four-point-client-contract.md`.
 
 ### `runlog_submit`
 
-Use the companion `runlog-author` skill (`skills/jetbrains/runlog-author.md`).
+Use the companion `runlog-author` skill (`skills/jetbrains/runlog-author.md`) — it drives the local Ed25519-signed verifier so the entry lands `verified` rather than `unverified`. Direct calls without the verifier are accepted but lower-trust.
 
 ### `runlog_report`
 
@@ -98,7 +98,7 @@ Always call after applying an entry.
 | `session_manifest` | object | no |
 | `error_context` | object | no |
 
-For the manifest wire shape, see `schema/manifest.schema.yaml`.
+For the manifest wire shape, see `runlog-schema/manifest.schema.yaml`.
 
 ## Setup
 
@@ -178,7 +178,7 @@ If the tools don't appear, restart the IDE and confirm `RUNLOG_API_KEY` is set i
 
 - `skills/runlog-author/SKILL.md` — submitting verified entries
 - `skills/common/four-point-client-contract.md` — cross-vendor contract
-- `docs/04-submission-format.md` — entry YAML, placeholders, verification types
+- `runlog-docs/04-submission-format.md` — entry YAML, placeholders, verification types
 - JetBrains AI Assistant docs — https://www.jetbrains.com/help/ai-assistant/
 
 ---

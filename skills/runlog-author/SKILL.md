@@ -7,7 +7,7 @@ description: Author and submit Runlog entries from a real debugging session. Dri
 
 This skill turns the submission side of Runlog from a multi-tool toolchain (build verifier, manage Ed25519 keypair, hand-write YAML, decode typed rejection reasons by hand) into "two prompts at the end of a real debugging session." When a developer hits a third-party-system gotcha and the agent debugs it, this skill drafts the entry, calls the local verifier, fixes whatever the verifier rejected, re-runs until `status: verified`, and submits.
 
-The verifier requirement is structural — `CLAUDE.md` invariant #6 ("verification happens on the submitter's machine") and `docs/03-verification-and-provenance.md §5.3` step 4 (mutation testing kills theatre). This skill makes the agent drive the verifier on the user's behalf. It does not weaken the verification gate.
+The verifier requirement is structural — `CLAUDE.md` invariant #6 ("verification happens on the submitter's machine") and `runlog-docs/03-verification-and-provenance.md §5.3` step 4 (mutation testing kills theatre). This skill makes the agent drive the verifier on the user's behalf. It does not weaken the verification gate.
 
 ## When to Use This Skill
 
@@ -74,7 +74,7 @@ A **one-time pre-flight check** runs on first invocation. If any prerequisite is
 
 | Prerequisite | Check | Today's user action if missing |
 |---|---|---|
-| `runlog-verifier` binary on `$PATH` | `command -v runlog-verifier` | `cd verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/` (release-artifact UX is a tracked prerequisite to the skill) |
+| `runlog-verifier` binary on `$PATH` | `command -v runlog-verifier` | `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/` (release-artifact UX is a tracked prerequisite to the skill) |
 | Ed25519 keypair at `~/.runlog/key` | `test -f ~/.runlog/key` | `runlog-verifier keygen --out ~/.runlog/key && chmod 600 ~/.runlog/key` |
 | Public key registered against the user's account | (server-side check on submit; client cannot pre-flight today) | `runlog-verifier register --email <addr>` (UX is a tracked prerequisite) |
 | `RUNLOG_API_KEY` set | `[ -n "$RUNLOG_API_KEY" ]` | Already required by the read skill — see [`../claude-code/SKILL.md`](../claude-code/SKILL.md) §Setup |
@@ -106,9 +106,9 @@ Generate `entry.yaml` against [`../../schema/entry.schema.yaml`](https://github.
   - `assertion_only` — last resort. Only when no runnable code exists. Discouraged except for protocol-shape claims; the entry will not earn the verified stamp via runtime checks.
   - `unit` — pure-function gotchas, no external state. Default for language/library behaviour.
   - `integration` mode `replay` — HTTP/RPC API gotcha. Cassette steps are recorded from the conversation's actual exchange (or composed from observed responses).
-  - `integration` mode `reexecute` — process / DB / filesystem gotcha. Today the verifier drives `shell` and `sqlite`; `postgres`, `redis`, `git`, `docker` are runtime-tool slices in flight (see `verifier/internal/verify/integration.go` `runtime_tool_not_yet_implemented` cases).
-- **Convert real values to placeholders** per `docs/04-submission-format.md §7`: `$PAYLOAD`, `$TOKEN`, `$ENDPOINT`, `$CREDENTIAL`, etc. Real credentials, internal hostnames, or PII MUST NEVER appear inline in the draft, even if the user asks. The hard-reject layer (`server/src/runlog/sanitize/tokens.py`) catches them server-side; the skill catches them client-side.
-- **Declare `$LITERAL_N`** for every non-routine literal that survives sanitization (timeouts, magic numbers, error codes, status codes). For each declared literal, ask the user to **confirm the `reason:` in plain language**. The reason is the human-in-the-loop guard against literal abuse described in `docs/05-sanitization.md §8.2` — the skill must not rubber-stamp it.
+  - `integration` mode `reexecute` — process / DB / filesystem gotcha. Today the verifier drives `shell` and `sqlite`; `postgres`, `redis`, `git`, `docker` are runtime-tool slices in flight (see `runlog-verifier/internal/verify/integration.go` `runtime_tool_not_yet_implemented` cases).
+- **Convert real values to placeholders** per `runlog-docs/04-submission-format.md §7`: `$PAYLOAD`, `$TOKEN`, `$ENDPOINT`, `$CREDENTIAL`, etc. Real credentials, internal hostnames, or PII MUST NEVER appear inline in the draft, even if the user asks. The hard-reject layer (`runlog/server/src/runlog/sanitize/tokens.py`) catches them server-side; the skill catches them client-side.
+- **Declare `$LITERAL_N`** for every non-routine literal that survives sanitization (timeouts, magic numbers, error codes, status codes). For each declared literal, ask the user to **confirm the `reason:` in plain language**. The reason is the human-in-the-loop guard against literal abuse described in `runlog-docs/05-sanitization.md §8.2` — the skill must not rubber-stamp it.
 - **Compose at least two mutations.** Each mutation must, when applied, plausibly change outcome — at least one mutation must invalidate the working approach. The verifier surfaces single-mutation no-discriminators as `mutation_did_not_discriminate` (see Step 3 fix table); pre-empt by reasoning about each mutation's expected effect before running the verifier.
 
 The skill SHOULD pattern-match on the working session for cassette content: HTTP calls already made in the debugging session (with literals → placeholders) become `cassette.steps`; shell/SQL already executed becomes `cassette.runtime` reexecute steps with `setup_script` that reproduces the sandbox.
@@ -124,7 +124,7 @@ Run `runlog-verifier verify <draft>.yaml` via Bash. Decode the JSON result.
 | `status: tier_unsupported, reason: ...` | Surface the named tier / tool / strategy. Either downgrade `verification.type`, drop the unsupported mutation, or explain that this gotcha cannot be verified yet on the local toolchain. **Never** silently strip a mutation to make the verifier accept the entry. |
 | Non-zero exit, no parseable JSON | Treat as environmental error (verifier missing, key missing, runtime-not-installed, etc.). Surface diagnostics. Do not retry. |
 
-Typed-reason → fix-strategy table (subset; full set in `verifier/internal/verify/`):
+Typed-reason → fix-strategy table (subset; full set in `runlog-verifier/internal/verify/`):
 
 | Reason | Likely fix |
 |---|---|
@@ -164,7 +164,7 @@ Derived from the load-bearing invariants in `CLAUDE.md`. Violating any of them c
 - **MUST NOT submit unverified.** If the verification loop fails to converge within the retry cap, hand back to the user. The verifier is the gate, not a suggestion. (Invariant #6.)
 - **MUST NOT inline real credentials, internal hostnames, or PII** in the draft, even if the user requests it. Hard-reject is a server-side last line of defence; the skill catches them client-side as a usability matter. (Invariant #4.)
 - **MUST NOT propose entries that would fail the scope rule.** Internal-code knowledge belongs in team memory; do not draft it. (Invariant #1.)
-- **MUST NOT silently weaken mutation testing** to make the verifier accept a draft (e.g. dropping a mutation that fails to discriminate instead of fixing it). Either fix the mutation or report the entry as unauthorable on the current verifier. (Invariant #6 / `docs/03-verification-and-provenance.md §5.3` step 4.)
+- **MUST NOT silently weaken mutation testing** to make the verifier accept a draft (e.g. dropping a mutation that fails to discriminate instead of fixing it). Either fix the mutation or report the entry as unauthorable on the current verifier. (Invariant #6 / `runlog-docs/03-verification-and-provenance.md §5.3` step 4.)
 - **MUST NOT replace `skills/claude-code/SKILL.md`.** It is a companion. The read side stays as-is; this skill fires only on the proposal-to-publish path.
 
 ## Out of Scope for v0
@@ -185,7 +185,7 @@ Target vendor priority: **Cursor → Cline → Continue → Windsurf → Aider �
 
 This skill assumes the read-side `runlog` skill is already configured (see [`../claude-code/SKILL.md`](../claude-code/SKILL.md) §Setup). Beyond the read-side prerequisites:
 
-1. **Build / install `runlog-verifier`.** From the repo: `cd verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. A release-artifact UX (so users don't need Go on their machine) is tracked as a structural prerequisite.
+1. **Build / install `runlog-verifier`.** From the repo: `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. A release-artifact UX (so users don't need Go on their machine) is tracked as a structural prerequisite.
 2. **Generate an Ed25519 keypair**: `runlog-verifier keygen --out ~/.runlog/key` (mode 0600).
 3. **Register the public half against your account**: `runlog-verifier register --email <addr>` (UX deferred; today the public key is registered manually against the API key's account row).
 
@@ -202,7 +202,7 @@ The skill performs a one-time pre-flight check on first invocation and surfaces 
 | `runlog-docs/04-submission-format.md` | Full submission spec: entry YAML, placeholders, verification types, cassettes, scope rules |
 | `runlog-docs/05-sanitization.md` | Allow-list pipeline, declared literals, hard-rejects |
 | `runlog-docs/03-verification-and-provenance.md` | Verifier invariants — differential execution, mutation testing, signed bundles |
-| `verifier/internal/verify/` | Source of truth for typed rejection reasons |
+| `runlog-verifier/internal/verify/` | Source of truth for typed rejection reasons |
 
 ---
 

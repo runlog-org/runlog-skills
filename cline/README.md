@@ -45,7 +45,7 @@ Cline adapter of the Runlog client skills. Cline is the second-highest priority 
    ```sh
    cp skills/cline/runlog-author.md .clinerules/runlog-author.md
    ```
-   Then build the verifier (`cd verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`) and generate a keypair (`runlog-verifier keygen --out ~/.runlog/key`).
+   Then build the verifier (`git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`) and generate a keypair (`runlog-verifier keygen --out ~/.runlog/key`).
 
 5. **Verify** — open Cline's MCP Servers panel; `runlog` should show as connected with three tools.
 

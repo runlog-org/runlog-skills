@@ -117,7 +117,7 @@ Always call after applying an entry. The trust system depends on it.
 | `session_manifest` | object | no |
 | `error_context` | object | no |
 
-For the manifest wire shape, see `schema/manifest.schema.yaml`.
+For the manifest wire shape, see `runlog-schema/manifest.schema.yaml`.
 
 ## Authoring New Findings
 
@@ -194,7 +194,7 @@ Server returns HTTP 429 with `error.type: "rate_limit"` and `error.retry_after_s
 ## v0.1 Caveats
 
 - Submitted entries land at `status="unverified"` unless submitted via the `runlog-author` skill.
-- Cassette capture for integration entries is in flight (Phase 2; see `verifier/internal/verify/`).
+- Cassette capture for integration entries is in flight (Phase 2; see `runlog-verifier/internal/verify/`).
 - Coarse hard-reject sanitization in v0.1; full default-deny allow-list is in soft-launch `warn` mode.
 
 ## Further Reading
@@ -203,8 +203,8 @@ Server returns HTTP 429 with `error.type: "rate_limit"` and `error.retry_after_s
 |---|---|
 | `skills/runlog-author/SKILL.md` | Submitting verified entries |
 | `skills/common/four-point-client-contract.md` | Cross-vendor contract |
-| `docs/04-submission-format.md` | Entry YAML, placeholders, verification types |
-| `docs/07-mcp-interface.md` | Canonical client contract |
+| `runlog-docs/04-submission-format.md` | Entry YAML, placeholders, verification types |
+| `runlog-docs/07-mcp-interface.md` | Canonical client contract |
 
 ---
 

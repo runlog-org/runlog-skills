@@ -42,7 +42,7 @@ If terminal access is denied (Windsurf supports per-workspace approval), surface
 
 ## Setup
 
-1. **Build / install `runlog-verifier`** (one-time): `cd verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. F24 release-artifact UX is tracked.
+1. **Build / install `runlog-verifier`** (one-time): `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. F24 release-artifact UX is tracked.
 2. **Generate an Ed25519 keypair**: `runlog-verifier keygen --out ~/.runlog/key`.
 3. **Register the public half**: `runlog-verifier register --email <addr>` (UX tracked under F24).
 4. **Append this adapter to `.windsurfrules`** (or paste into Windsurf's global rules):
