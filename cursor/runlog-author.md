@@ -43,13 +43,18 @@ test -f ~/.runlog/key        # Ed25519 keypair generated and registered
 If `runlog-verifier` is missing, instruct the user:
 
 ```sh
-git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/
+PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
+BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
+curl -fLO "$BASE/runlog-verifier-$PLATFORM"
+curl -fLO "$BASE/SHA256SUMS"
+sha256sum --check --ignore-missing SHA256SUMS
+install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 ```
 
 If `~/.runlog/key` is missing:
 
 ```sh
-runlog-verifier keygen --out ~/.runlog/key && chmod 600 ~/.runlog/key
+runlog-verifier register --email <your-email>
 ```
 
 If `$RUNLOG_API_KEY` is unset, instruct the user to set it in the shell that launched Cursor (Cursor inherits the parent shell's env; settings need to be made before launch or via Cursor's own env-var settings).
@@ -72,10 +77,19 @@ Both heuristic and explicit invocations route into the same four-step flow.
 
 This adapter assumes the read-side Cursor skill is already configured (see `skills/cursor/SKILL.md §Setup`). Beyond that:
 
-1. **Build / install `runlog-verifier`** (one-time): `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. Release-artifact UX is a tracked F24 prerequisite.
-2. **Generate an Ed25519 keypair**: `runlog-verifier keygen --out ~/.runlog/key`.
-3. **Register the public half against your account**: `runlog-verifier register --email <addr>` (UX is a tracked F24 prerequisite; today the public key is registered manually against the API key's account row).
-4. **Install this adapter as a Cursor rule**:
+1. **Install `runlog-verifier`** (one-time):
+
+```sh
+PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
+BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
+curl -fLO "$BASE/runlog-verifier-$PLATFORM"
+curl -fLO "$BASE/SHA256SUMS"
+sha256sum --check --ignore-missing SHA256SUMS
+install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
+```
+
+2. **Generate an Ed25519 keypair and register it**: `runlog-verifier register --email <your-email>` (generates the keypair at `~/.runlog/key` mode 0600 inside a 0700 dir, and uploads the pubkey; reads `RUNLOG_API_KEY` from env).
+3. **Install this adapter as a Cursor rule**:
 
 ```sh
 # Project-scoped (recommended for repos with shared author conventions)
@@ -89,15 +103,9 @@ cp skills/cursor/runlog-author.md ~/.cursor/rules/runlog-author.mdc
 
 The adapter loads alongside the read-side `runlog.mdc`. Both rules together implement the four-point contract end-to-end.
 
-## End-to-end functionality is gated on F24 prerequisites
+## Status
 
-Three structural prerequisites are NOT yet built. Until they ship:
-
-- **Verifier release artifact** missing → users build from source via `make build`. Manageable for engineers; blocker for casual contributors.
-- **Server-side public-key registration** missing → the bundle's signature is currently trusted blindly by the server. Cryptographic handshake is one-sided in prod. The skill works as designed; the server-side trust improves when the registration flow ships.
-- **`runlog-verifier register --email` UX** missing → users register the pubkey manually.
-
-The skill body itself is unaffected when prerequisites ship; only the Setup section gets simpler.
+This adapter is functional end-to-end as of `runlog-verifier v0.1.0` (2026-04-28). Server-side bundle signature verification + the `register --email` UX + the release artifacts shipped under F24. The skill body is unchanged from when the prereqs were tracked.
 
 ## Further Reading
 

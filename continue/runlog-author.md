@@ -44,10 +44,19 @@ If terminal-tool access is unavailable in the installed Continue version, surfac
 
 This adapter assumes the read-side Continue skill is already configured (see `skills/continue/SKILL.md §Setup`). Beyond that:
 
-1. **Build / install `runlog-verifier`** (one-time): `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. F24 release-artifact UX is tracked.
-2. **Generate an Ed25519 keypair**: `runlog-verifier keygen --out ~/.runlog/key`.
-3. **Register the public half**: `runlog-verifier register --email <addr>` (UX tracked under F24).
-4. **Add this adapter as a Continue rule** in `config.yaml`:
+1. **Install `runlog-verifier`** (one-time):
+
+```sh
+PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
+BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
+curl -fLO "$BASE/runlog-verifier-$PLATFORM"
+curl -fLO "$BASE/SHA256SUMS"
+sha256sum --check --ignore-missing SHA256SUMS
+install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
+```
+
+2. **Generate an Ed25519 keypair and register it**: `runlog-verifier register --email <your-email>` (generates the keypair at `~/.runlog/key` mode 0600 inside a 0700 dir, and uploads the pubkey; reads `RUNLOG_API_KEY` from env).
+3. **Add this adapter as a Continue rule** in `config.yaml`:
 
 ```yaml
 rules:
@@ -58,9 +67,9 @@ rules:
 
 Or commit `skills/continue/runlog-author.md` to the workspace and reference via Continue's context-provider / @file mechanism (per the version installed).
 
-## End-to-end functionality is gated on F24 prerequisites
+## Status
 
-Three structural prerequisites are NOT yet built (verifier release artifact, server-side public-key registration, `runlog-verifier register --email` UX). See `skills/runlog-author/DESIGN.md §Status` for the tracker.
+This adapter is functional end-to-end as of `runlog-verifier v0.1.0` (2026-04-28). Server-side bundle signature verification + the `register --email` UX + the release artifacts shipped under F24. The skill body is unchanged from when the prereqs were tracked.
 
 ## Further Reading
 

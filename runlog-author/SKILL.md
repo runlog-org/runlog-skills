@@ -74,13 +74,11 @@ A **one-time pre-flight check** runs on first invocation. If any prerequisite is
 
 | Prerequisite | Check | Today's user action if missing |
 |---|---|---|
-| `runlog-verifier` binary on `$PATH` | `command -v runlog-verifier` | `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/` (release-artifact UX is a tracked prerequisite to the skill) |
-| Ed25519 keypair at `~/.runlog/key` | `test -f ~/.runlog/key` | `runlog-verifier keygen --out ~/.runlog/key && chmod 600 ~/.runlog/key` |
-| Public key registered against the user's account | (server-side check on submit; client cannot pre-flight today) | `runlog-verifier register --email <addr>` (UX is a tracked prerequisite) |
+| `runlog-verifier` binary on `$PATH` | `command -v runlog-verifier` | Install from [the latest release](https://github.com/runlog-org/runlog-verifier/releases/latest) and verify against `SHA256SUMS`. See §Setup. |
+| Ed25519 keypair at `~/.runlog/key` | `test -f ~/.runlog/key` | `runlog-verifier register --email <addr>` — generates the keypair (mode 0600 inside a 0700 dir) and uploads the public half in one step. |
+| Public key registered against the user's account | (server-side check on submit; client cannot pre-flight today) | `runlog-verifier register --email <addr>` — same command as the keypair row. Re-running with an existing local key re-uploads the same pubkey; idempotent if the key is already registered. |
 | `RUNLOG_API_KEY` set | `[ -n "$RUNLOG_API_KEY" ]` | Already required by the read skill — see [`../claude-code/SKILL.md`](../claude-code/SKILL.md) §Setup |
 | Runtime the entry exercises | `command -v <tool>` per `verification.type` / `cassette.runtime.tool` | Install the matching tool, or surface `tier_unsupported` (Step 3) without retry |
-
-The release-artifact UX (so users don't need a Go toolchain), the public-key registration flow, and the `runlog-verifier register --email` UX are tracked separately as the skill's structural prerequisites. Until they ship, the manual workarounds in this table apply. The skill body itself is unaffected — pre-flight still surfaces a single diagnostic; the user resolves the gap and re-runs.
 
 ## The Author Flow
 
@@ -185,9 +183,22 @@ Target vendor priority: **Cursor → Cline → Continue → Windsurf → Aider �
 
 This skill assumes the read-side `runlog` skill is already configured (see [`../claude-code/SKILL.md`](../claude-code/SKILL.md) §Setup). Beyond the read-side prerequisites:
 
-1. **Build / install `runlog-verifier`.** From the repo: `git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`. A release-artifact UX (so users don't need Go on their machine) is tracked as a structural prerequisite.
-2. **Generate an Ed25519 keypair**: `runlog-verifier keygen --out ~/.runlog/key` (mode 0600).
-3. **Register the public half against your account**: `runlog-verifier register --email <addr>` (UX deferred; today the public key is registered manually against the API key's account row).
+1. **Install `runlog-verifier`.** Download the binary for your platform from the [latest release](https://github.com/runlog-org/runlog-verifier/releases/latest), verify it against `SHA256SUMS`, and put it on `$PATH`:
+
+       PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
+       BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
+       curl -fLO "$BASE/runlog-verifier-$PLATFORM"
+       curl -fLO "$BASE/SHA256SUMS"
+       sha256sum --check --ignore-missing SHA256SUMS
+       install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
+
+   The release workflow's reproducibility check guarantees the binary matches what `make release` produces from source. To verify from source, see [`runlog-verifier/RELEASING.md`](https://github.com/runlog-org/runlog-verifier/blob/main/RELEASING.md) §"Verify a release locally".
+
+2. **Register your verification key.** One command both generates the Ed25519 keypair at `~/.runlog/key` (mode 0600 inside a 0700 dir) and uploads the public half against your API key's account:
+
+       runlog-verifier register --email <your-email>
+
+   Reads `RUNLOG_API_KEY` from the environment. Idempotent on an existing local key — re-running re-uploads the same pubkey. Use `--force` only if you've lost the local key and accept that the server returns 409 until support rotates the registration.
 
 The skill performs a one-time pre-flight check on first invocation and surfaces missing prerequisites as a single diagnostic.
 
