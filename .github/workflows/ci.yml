@@ -1,0 +1,83 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdown-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Catches drift across the 9 vendor adapters: heading hierarchy,
+      # list-style consistency, trailing whitespace, etc. Prose-style
+      # rules (line length, bare URLs, inline HTML) are deliberately
+      # disabled — see .markdownlint-cli2.jsonc for the rationale.
+      #
+      # skills/ is excluded: those files are byte-for-byte plugin-loader
+      # mirrors of canonical bodies under runlog-author/ and claude-code/
+      # (cp-managed per README §Maintenance pattern). Linting them too
+      # would just double-report any finding on the originals.
+      - uses: DavidAnson/markdownlint-cli2-action@v19
+        with:
+          globs: |
+            **/*.md
+            !**/node_modules/**
+            !skills/**
+
+  dead-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # External dead-link gate. Allowlist patterns live in
+      # .lycheeignore — github.com/runlog-org/runlog-docs/* (private
+      # repo, expected 404), api.runlog.org/* (POST-only MCP endpoint),
+      # localhost / loopback. Anchor (#fragment) checking is left at
+      # lychee's default (off).
+      #
+      # skills/ is excluded for the same reason as markdown-lint above —
+      # the relative paths inside the byte-for-byte mirrors are valid
+      # only at the canonical body location.
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --no-progress
+            --verbose
+            --exclude-path skills
+            --exclude-path node_modules
+            './**/*.md'
+          fail: true
+
+  installer-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          # No cache: installer/ has zero runtime + dev deps, so there is
+          # no package-lock.json to key the cache off, and nothing to
+          # cache in the first place.
+
+      # installer/ has no devDeps and no lint/test scripts (zero-dep CLI
+      # by design — fetches skill bodies live from GitHub). The smoke
+      # value here is verifying that package.json is valid, the bin
+      # entrypoint resolves, and the publishable tarball is well-formed.
+      - name: npm pack --dry-run
+        working-directory: installer
+        run: npm pack --dry-run
+
+      - name: node syntax check on bin
+        working-directory: installer
+        run: node --check index.js

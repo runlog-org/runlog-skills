@@ -1,0 +1,18 @@
+# Lychee URL allowlist for runlog-skills CI dead-link checker.
+# Each line is a regex matched against the full URL.
+
+# runlog-docs is the private architectural-docs repo. Per-vendor
+# SKILL.md files reference it (e.g. runlog-docs/04-submission-format.md)
+# but those are bare paths, not URLs — included here defensively in
+# case future references add the github.com/ prefix.
+^https?://github\.com/runlog-org/runlog-docs/.*
+
+# api.runlog.org is the live MCP server endpoint. It only accepts
+# POST with a Bearer token; lychee's default GET probe will return
+# a non-2xx response. The URL appears in every per-vendor MCP
+# config snippet.
+^https?://api\.runlog\.org(/.*)?$
+
+# Loopback / local-dev references that may appear in example
+# config snippets.
+^https?://(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?(/.*)?$

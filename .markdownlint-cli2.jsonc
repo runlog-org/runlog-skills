@@ -1,0 +1,39 @@
+{
+  // Markdown-lint rules for the runlog-skills repo (9 vendor adapters
+  // + common/ shared contracts + installer/). Goal: catch drift in
+  // heading hierarchy, list style, and trailing whitespace; stay out
+  // of the way of skill-body prose.
+  "config": {
+    "default": true,
+
+    // MD013 line-length — disabled. Skill bodies have long prose
+    // paragraphs and tabular cells (vendor matrices, prerequisite
+    // checklists) that exceed any sane line limit by design.
+    "MD013": false,
+
+    // MD033 inline HTML — disabled. Vendor READMEs may embed
+    // <details> blocks or similar to keep optional sections
+    // collapsible on GitHub.
+    "MD033": false,
+
+    // MD034 bare URLs — disabled. Skill READMEs use bare GitHub /
+    // vendor-doc URLs in inline references (e.g. "VERIFY against
+    // https://aider.chat/docs/") and forcing <…> wrapping hurts
+    // readability without buying anything.
+    "MD034": false,
+
+    // MD041 first-line-h1 — disabled. SKILL.md and runlog-author.md
+    // bodies start with a YAML front-matter block and use ## as
+    // their first heading (the H1-equivalent name lives in
+    // front-matter). This is the cross-vendor convention.
+    "MD041": false
+  },
+  "ignores": [
+    "node_modules",
+    "installer/node_modules",
+    // Plugin-loader mirrors of canonical bodies — see
+    // README.md §Maintenance pattern. Linting them would just
+    // double-report on the cp-managed originals.
+    "skills"
+  ]
+}
