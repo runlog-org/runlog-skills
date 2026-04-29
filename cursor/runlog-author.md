@@ -19,6 +19,11 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Cursor reads via the terminal tool (no special secret store integration today). Filesystem access prompt may fire on first run. |
 | **Draft persistence** | "Hold the draft in memory" | Write the draft to `.runlog-author/<unit_id>.yaml` in the workspace (a gitignored scratch dir Cursor's agent owns). Survives across turns; cleaned up on successful submit. |
 
+```
+# add to your project's .gitignore:
+.runlog-author/
+```
+
 ## What this adapter MUST NOT change
 
 Per `skills/common/runlog-author-contract.md`:
@@ -47,7 +52,7 @@ PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
 BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
 curl -fLO "$BASE/runlog-verifier-$PLATFORM"
 curl -fLO "$BASE/SHA256SUMS"
-sha256sum --check --ignore-missing SHA256SUMS
+grep "runlog-verifier-$PLATFORM" SHA256SUMS | sha256sum --check -
 install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 ```
 
@@ -84,7 +89,7 @@ PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
 BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
 curl -fLO "$BASE/runlog-verifier-$PLATFORM"
 curl -fLO "$BASE/SHA256SUMS"
-sha256sum --check --ignore-missing SHA256SUMS
+grep "runlog-verifier-$PLATFORM" SHA256SUMS | sha256sum --check -
 install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 ```
 

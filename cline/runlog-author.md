@@ -20,6 +20,11 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **Draft persistence** | "Hold the draft in memory" | Write to `.runlog-author/<unit_id>.yaml` (workspace-scoped, gitignored). Cline's file-write tool persists across plan/act transitions cleanly. |
 | **MCP `runlog_submit` call** | "Pass `verification_signature: <bundle>`" | Cline's MCP integration handles the call; the agent assembles the JSON arguments per the standard MCP tool-call shape. |
 
+```
+# add to your project's .gitignore:
+.runlog-author/
+```
+
 ## What this adapter MUST NOT change
 
 Per `skills/common/runlog-author-contract.md`:
@@ -59,9 +64,9 @@ Both heuristic and explicit invocations route into the same four-step flow.
 
 ## Auto-approval suggestions
 
-To reduce friction during the verification loop, the user MAY auto-approve `runlog-verifier` in Cline's settings. This auto-approves only the verifier binary, not arbitrary commands — the verifier reads only the draft file and writes nothing outside `~/.runlog/`, `/tmp/`, and stdout.
+To reduce friction during the verification loop, the user MAY auto-approve `runlog-verifier` in Cline's settings. Auto-approving the local verifier binary is fine — it's a deterministic, local, signed action; the verifier reads only the draft file and writes nothing outside `~/.runlog/`, `/tmp/`, and stdout.
 
-The `runlog_submit` MCP call is separate from `execute_command` and uses Cline's MCP auto-approve list. Adding `runlog_submit` to the auto-approve list is optional and risk-managed: a forged signature can't bypass server-side validation, but auto-approving submission means the user doesn't get a final "ship it?" prompt before the entry is published.
+Auto-approving the `runlog_submit` MCP call is **NOT recommended**. The MCP submission step is the final review gate before an entry is published; a prompt-injected context could otherwise publish without the user seeing it. Forged signatures can't bypass server-side validation, but submission itself is the human-in-the-loop. Keep `runlog_submit` off Cline's MCP auto-approve list.
 
 ## Setup
 
@@ -74,7 +79,7 @@ PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
 BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
 curl -fLO "$BASE/runlog-verifier-$PLATFORM"
 curl -fLO "$BASE/SHA256SUMS"
-sha256sum --check --ignore-missing SHA256SUMS
+grep "runlog-verifier-$PLATFORM" SHA256SUMS | sha256sum --check -
 install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 ```
 

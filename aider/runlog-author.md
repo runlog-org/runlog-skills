@@ -19,6 +19,11 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Aider reads via `/run cat ~/.runlog/key` if needed (rarely — the verifier reads the key directly). Standard filesystem permissions apply. |
 | **Draft persistence** | "Hold the draft in memory" | Aider edits `.runlog-author/<unit_id>.yaml` as a normal repo file via `/code`. The draft becomes a real file the user can inspect; gitignore the directory. |
 
+```
+# add to your project's .gitignore:
+.runlog-author/
+```
+
 ## What this adapter MUST NOT change
 
 Per `skills/common/runlog-author-contract.md`:
@@ -66,7 +71,7 @@ PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
 BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
 curl -fLO "$BASE/runlog-verifier-$PLATFORM"
 curl -fLO "$BASE/SHA256SUMS"
-sha256sum --check --ignore-missing SHA256SUMS
+grep "runlog-verifier-$PLATFORM" SHA256SUMS | sha256sum --check -
 install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 ```
 
@@ -89,7 +94,7 @@ This adapter is functional end-to-end as of `runlog-verifier v0.1.0` (2026-04-28
 
 ## Aider-specific cautions
 
-- Aider's `/run` requires user approval per command. The verification loop will trigger 1–N approval prompts where N ≤ 5. Users who want to streamline this can use Aider's `--yes-always` flag (caution: applies to all commands in the session, not just verifier ones).
+- Aider's `/run` requires user approval per command. The verification loop will trigger 1–N approval prompts where N ≤ 5. Users who want to streamline this can use Aider's `--yes-always` flag (caution: applies to all commands in the session, not just verifier ones). Auto-approving local `runlog-verifier` invocations is fine (deterministic, local, signed); the `runlog_submit` MCP call is the final review gate and **NOT recommended** for auto-approval — a prompt-injected context could otherwise publish without your review.
 - Aider's chat history is the manifest carrier — long sessions accumulate context. Flush `runlog_report` before `/exit` to ensure outcomes are reported.
 - Aider's diff-based editing means draft YAML changes show up as repo diffs — a feature, not a bug, for review.
 

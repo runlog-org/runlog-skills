@@ -72,6 +72,6 @@ The contract is framework-agnostic; Cline adapters swap orchestration glue (`exe
 
 ## Auto-approve recommendations
 
-To reduce friction in the write-side verification loop, consider whitelisting `runlog-verifier` in Cline's command auto-approve list. The verifier reads only the draft file and writes nothing outside `~/.runlog/` and `/tmp/`. Auto-approving `runlog_submit` is optional and risk-managed (forged signatures can't bypass server-side validation, but you lose the final "ship it?" gate).
+To reduce friction in the write-side verification loop, consider whitelisting `runlog-verifier` in Cline's command auto-approve list — auto-approving the local verifier binary is fine, since it's a deterministic, local, signed action that reads only the draft file and writes nothing outside `~/.runlog/` and `/tmp/`. Auto-approving the `runlog_submit` MCP call is **NOT recommended**: submission is the final review gate, and a prompt-injected context could otherwise publish without your review. Keep `runlog_submit` off Cline's MCP auto-approve list.
 
 User-rules (cross-workspace) typically live in `~/Documents/Cline/Rules/` — drop `runlog.md` and `runlog-author.md` there to apply across all workspaces. The exact path varies by Cline version; check Cline's settings UI.

@@ -50,6 +50,8 @@ Zed adapter of the Runlog client skills. Tracker: `[F25] Multi-vendor MCP skill 
    }
    ```
 
+   > **Security note.** `npx -y mcp-proxy` installs the latest published version on every Zed launch. `mcp-proxy` is a third-party npm package — verify the publisher before trusting it with `RUNLOG_API_KEY`. For production use, pin to a specific version (`"mcp-proxy@X.Y.Z"`). Run `npm view mcp-proxy` to find the current latest and pin to it.
+
    > **VERIFY against current Zed docs** at https://zed.dev/docs/.
 
 3. **Install the read-side skill** as a Zed rule:

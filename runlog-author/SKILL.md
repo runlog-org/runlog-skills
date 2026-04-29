@@ -189,7 +189,7 @@ This skill assumes the read-side `runlog` skill is already configured (see [`../
        BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
        curl -fLO "$BASE/runlog-verifier-$PLATFORM"
        curl -fLO "$BASE/SHA256SUMS"
-       sha256sum --check --ignore-missing SHA256SUMS
+       grep "runlog-verifier-$PLATFORM" SHA256SUMS | sha256sum --check -
        install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 
    The release workflow's reproducibility check guarantees the binary matches what `make release` produces from source. To verify from source, see [`runlog-verifier/RELEASING.md`](https://github.com/runlog-org/runlog-verifier/blob/main/RELEASING.md) §"Verify a release locally".

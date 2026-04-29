@@ -19,6 +19,11 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Continue accesses via the terminal tool. Filesystem access depends on Continue's permission model in the version installed. |
 | **Draft persistence** | "Hold the draft in memory" | Write to `.runlog-author/<unit_id>.yaml` (workspace-scoped, gitignored). Continue's file-write tool persists across the agent-mode session. |
 
+```
+# add to your project's .gitignore:
+.runlog-author/
+```
+
 ## What this adapter MUST NOT change
 
 Per `skills/common/runlog-author-contract.md`:
@@ -51,7 +56,7 @@ PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
 BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
 curl -fLO "$BASE/runlog-verifier-$PLATFORM"
 curl -fLO "$BASE/SHA256SUMS"
-sha256sum --check --ignore-missing SHA256SUMS
+grep "runlog-verifier-$PLATFORM" SHA256SUMS | sha256sum --check -
 install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 ```
 

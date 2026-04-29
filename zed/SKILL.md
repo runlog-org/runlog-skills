@@ -153,6 +153,8 @@ If your Zed version doesn't yet support HTTP `context_servers`, run a small stdi
 }
 ```
 
+> **Security note.** `npx -y mcp-proxy` installs the latest published version on every Zed launch. `mcp-proxy` is a third-party npm package — verify the publisher before trusting it with `RUNLOG_API_KEY`. For production use, pin to a specific version: replace `"mcp-proxy"` with `"mcp-proxy@X.Y.Z"`. Run `npm view mcp-proxy` to find the current latest version and pin to it.
+
 The bridge approach also helps if you want to redact / log MCP traffic locally for debugging.
 
 ### 4. Install this skill as a Zed rule

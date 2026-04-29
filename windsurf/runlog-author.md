@@ -14,10 +14,15 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | Concern | Canonical body | Windsurf specifics |
 |---|---|---|
 | **Invocation** | "User says 'publish'" | Plain-language request in Cascade ("publish that to runlog"), or the heuristic prompt fires after a successful external-dependency fix in Write mode. |
-| **Local Bash dispatch** | "Run `runlog-verifier verify <draft>.yaml`" | Cascade's terminal tool. Each verifier invocation is a single command; user approval per command unless allow-listed in Windsurf's terminal-tool settings. |
+| **Local Bash dispatch** | "Run `runlog-verifier verify <draft>.yaml`" | Cascade's terminal tool. Each verifier invocation is a single command; user approval per command unless allow-listed in Windsurf's terminal-tool settings. Allow-listing the local `runlog-verifier` binary is fine (deterministic, local, signed); allow-listing or auto-approving the `runlog_submit` MCP call is **NOT recommended** — submission is the final review gate. |
 | **Agent-loop iteration** | "Cap at 5 retry rounds" | Each retry is a Cascade turn. Cap is on `runlog-verifier verify` invocations. |
 | **`~/.runlog/key` access** | "Read the keypair file" | Cascade reads via the terminal tool. Standard filesystem permissions apply. |
 | **Draft persistence** | "Hold the draft in memory" | Write to `.runlog-author/<unit_id>.yaml` (workspace-scoped, gitignored). Cascade's file-write tool persists across turns. Or use a Windsurf memory to carry the draft state if the workspace is read-only. |
+
+```
+# add to your project's .gitignore:
+.runlog-author/
+```
 
 ## What this adapter MUST NOT change
 
@@ -49,7 +54,7 @@ PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
 BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
 curl -fLO "$BASE/runlog-verifier-$PLATFORM"
 curl -fLO "$BASE/SHA256SUMS"
-sha256sum --check --ignore-missing SHA256SUMS
+grep "runlog-verifier-$PLATFORM" SHA256SUMS | sha256sum --check -
 install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 ```
 

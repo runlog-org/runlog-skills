@@ -19,6 +19,11 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Read via the terminal tool; standard filesystem permissions. |
 | **Draft persistence** | "Hold the draft in memory" | Zed Assistant can edit files directly; write the draft to `.runlog-author/<unit_id>.yaml` (gitignored). The user can inspect the draft in a Zed buffer before approving the verifier call. |
 
+```
+# add to your project's .gitignore:
+.runlog-author/
+```
+
 ## What this adapter MUST NOT change
 
 Per `skills/common/runlog-author-contract.md`:
@@ -51,7 +56,7 @@ PLATFORM=linux-amd64   # or linux-arm64, darwin-amd64, darwin-arm64
 BASE=https://github.com/runlog-org/runlog-verifier/releases/latest/download
 curl -fLO "$BASE/runlog-verifier-$PLATFORM"
 curl -fLO "$BASE/SHA256SUMS"
-sha256sum --check --ignore-missing SHA256SUMS
+grep "runlog-verifier-$PLATFORM" SHA256SUMS | sha256sum --check -
 install -m 0755 "runlog-verifier-$PLATFORM" ~/.local/bin/runlog-verifier
 ```
 
@@ -74,6 +79,7 @@ This adapter is functional end-to-end as of `runlog-verifier v0.1.0` (2026-04-28
 
 - Zed Assistant's tool-use surface depends on the agent mode being enabled and the model supporting tool calls. Some configurations (smaller local models, completion-only mode) won't support the verification loop.
 - For the stdio-bridge MCP setup: the local proxy runs as a child process of Zed; it inherits Zed's environment. Make sure `RUNLOG_API_KEY` is set in the shell that launched Zed.
+- Allow-listing the local `runlog-verifier` binary is fine (deterministic, local, signed). Allow-listing or auto-approving the `runlog_submit` MCP call is **NOT recommended** — submission is the final review gate, and a prompt-injected context could otherwise publish without your review.
 
 ## Further Reading
 
