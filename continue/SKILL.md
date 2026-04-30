@@ -130,6 +130,8 @@ export RUNLOG_API_KEY="sk-runlog-<your-key>"
 
 ### 3. Add Runlog to Continue's config
 
+> **Note:** Neon's [`add-mcp`](https://github.com/neondatabase/add-mcp) (which we recommend on Claude Code, Cursor, and Cline as the one-line install) does not yet support Continue.dev as a target. Continue's install path is the manual config below until either `add-mcp` adds Continue support upstream or Runlog's own installer extends to write Continue's `config.yaml` directly.
+
 Continue 1.0+ uses YAML configuration at `~/.continue/config.yaml` (global) or `.continue/config.yaml` (workspace). Older versions used `~/.continue/config.json`. Both forms are documented below.
 
 #### YAML (preferred, Continue 1.0+)

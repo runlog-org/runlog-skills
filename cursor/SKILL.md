@@ -148,9 +148,17 @@ export RUNLOG_API_KEY="sk-runlog-<your-key>"
 
 Do not commit it to any config file. If you use a `.env` file for local development, add it to `.gitignore` first.
 
-### 3. Add Runlog to Cursor's MCP config
+### 3. Install the Runlog MCP server
 
-Cursor reads MCP server configuration from `~/.cursor/mcp.json` (global, applies across all projects) or `.cursor/mcp.json` (project-scoped). Use the project-scoped form when committing the config alongside the project; use the global form for personal use.
+The recommended path uses Neon's [`add-mcp`](https://github.com/neondatabase/add-mcp) — a third-party CLI that reads Runlog's [Official MCP Registry](https://registry.modelcontextprotocol.io/) entry (`org.runlog/runlog`) and writes a working config to `~/.cursor/mcp.json` (or `.cursor/mcp.json` for project scope) without hand-editing:
+
+```sh
+npx add-mcp https://api.runlog.org/mcp -a cursor
+```
+
+Drop `-a cursor` to install across every detected MCP-capable agent on the machine; pass `-g` for a global config instead of project-scoped. `add-mcp` prompts for the `Authorization: Bearer …` header and writes the entry for you.
+
+If you'd rather edit the config by hand (or `add-mcp` isn't available), Cursor reads MCP server configuration from `~/.cursor/mcp.json` (global, applies across all projects) or `.cursor/mcp.json` (project-scoped). Use the project-scoped form when committing the config alongside the project; use the global form for personal use.
 
 ```json
 {

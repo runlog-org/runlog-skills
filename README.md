@@ -30,11 +30,11 @@ Asterisks (`*`) flag adapters whose MCP integration is evolving in the upstream 
 
 ## Install
 
-Three install paths, in order of preference for a given vendor:
+Four install paths, in order of preference for a given vendor:
 
-### 1. Claude Code: plugin marketplace (recommended)
+### 1. Claude Code: plugin marketplace (smoothest for Claude Code)
 
-Claude Code users get the smoothest install — the plugin auto-registers the Runlog MCP server, so no manual MCP config edits:
+Claude Code users get the smoothest install — the plugin auto-registers the Runlog MCP server **and** drops the skills in place, so no manual MCP config edits and no separate `cp` step for the skill body:
 
 ```text
 /plugin marketplace add runlog-org/runlog-skills
@@ -43,7 +43,21 @@ Claude Code users get the smoothest install — the plugin auto-registers the Ru
 
 Then `export RUNLOG_API_KEY=sk-runlog-<your-key>` (key from <https://runlog.org/register>) and the `runlog` and `runlog-author` skills are available in any session.
 
-### 2. Any vendor: `npx @runlog/install <vendor>`
+### 2. Cross-vendor MCP install: `npx add-mcp` (Claude Code, Cursor, Cline)
+
+The one-liner that covers the three Runlog vendors `add-mcp` writes a working config for. Neon's [`add-mcp`](https://github.com/neondatabase/add-mcp) reads Runlog's [Official MCP Registry](https://registry.modelcontextprotocol.io/) entry (`org.runlog/runlog`) and auto-detects every supported agent on the machine, writing the correct config for each:
+
+```sh
+npx add-mcp https://api.runlog.org/mcp
+```
+
+Pass `-a <agent>` to target one host (`claude-code`, `cursor`, `cline`); pass `-g` for a global config rather than project-scoped. Validated for: Claude Code, Cursor, Cline (both VS Code extension and `cline-cli`).
+
+**Continue, Windsurf, Aider, VS Code Copilot, and JetBrains are not in `add-mcp`'s supported set today** — use path 3 or 4 for those vendors. Zed *is* in `add-mcp`'s supported set but isn't validated for Runlog yet under this slice; treat it as path 3/4 until M01-S02 covers the wider host fan-out.
+
+`add-mcp` only writes the MCP server config; the per-vendor `SKILL.md` body still needs to land in the host's rules path. Either copy it manually (path 4) or run `npx @runlog/install <vendor> --write` (path 3) for the skill side. The Claude Code plugin (path 1) does both in one step.
+
+### 3. Any vendor: `npx @runlog/install <vendor>`
 
 ```sh
 # Print the rule + MCP config for review
@@ -55,7 +69,7 @@ npx @runlog/install cursor --write
 
 Vendors: `claude-code`, `cursor`, `cline`, `continue`, `windsurf`, `aider`, `copilot`, `jetbrains`, `zed`. The installer fetches the canonical `SKILL.md` from this repo's `main` and writes it to the right vendor-specific path (or prints it for vendors that share a single rules file with the user's other content). It does **not** auto-edit your MCP config — it prints the snippet for you to merge in. See [`installer/README.md`](./installer/README.md) for full flag reference.
 
-### 3. Manual: clone + copy
+### 4. Manual: clone + copy
 
 The original install model still works — each per-vendor folder's README has a `Quickstart` section that walks through `cp <vendor>/SKILL.md <target-path>` plus the MCP config to add. Use this if you want to read the rule before installing it, or your environment doesn't have npm.
 
