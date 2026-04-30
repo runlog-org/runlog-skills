@@ -6,7 +6,6 @@ the runlog.mdc rule file to ~/.cursor/rules/.
 
 from __future__ import annotations
 
-import json
 import os
 import stat
 from pathlib import Path

@@ -6,8 +6,6 @@ Installs the Runlog skill and MCP server config for Claude Code.
 
 from __future__ import annotations
 
-import json
-import os
 from pathlib import Path
 
 from runlog_install import jsonc
@@ -24,9 +22,10 @@ class ClaudeCodeHost:
     # When installed via `pip install -e python-installer/` from inside the
     # runlog-skills repo, __file__ resolves to:
     #   <repo-root>/python-installer/src/runlog_install/hosts/claude_code.py
-    # so parents[3] == <repo-root>.
+    # parents[0]=hosts/  [1]=runlog_install/  [2]=src/  [3]=python-installer/
+    # [4]=runlog-skills/ (repo root). Matches CursorHost._SKILL_SRC.
     _SKILL_SRC = (
-        Path(__file__).resolve().parents[3] / "claude-code" / "SKILL.md"
+        Path(__file__).resolve().parents[4] / "claude-code" / "SKILL.md"
     )
 
     # ------------------------------------------------------------------
@@ -53,14 +52,13 @@ class ClaudeCodeHost:
         # 3. Read existing settings.json, or seed with a minimal structure.
         # We seed with mcpServers already present to avoid a spurious leading
         # comma that jsonc.add_to_object produces when bootstrapping a missing
-        # top-level key into a completely empty "{}".
+        # top-level key into a completely empty "{}". Mirrors CursorHost.
+        _SEED = '{\n  "mcpServers": {}\n}'
         if settings_path.is_file():
-            text = settings_path.read_text(encoding="utf-8")
-            # If the file exists but has no mcpServers key yet, ensure the
-            # bootstrap path in add_to_object won't produce "{,..." by
-            # verifying the root has at least one key or by normalising.
+            raw = settings_path.read_text(encoding="utf-8").strip()
+            text = raw if raw else _SEED
         else:
-            text = '{\n  "mcpServers": {}\n}'
+            text = _SEED
 
         # 4. Build the MCP block value.
         mcp_block = {
