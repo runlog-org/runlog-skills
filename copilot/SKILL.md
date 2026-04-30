@@ -216,7 +216,7 @@ If the tools don't appear, run `MCP: List Servers` from the command palette and 
 - `skills/runlog-author/SKILL.md` — submitting verified entries
 - `skills/common/four-point-client-contract.md` — cross-vendor contract
 - `runlog-docs/04-submission-format.md` — entry YAML, placeholders, verification types
-- VS Code MCP docs — https://code.visualstudio.com/docs/copilot/
+- VS Code MCP docs — https://code.visualstudio.com/docs/copilot/customization/mcp-servers
 
 ---
 
