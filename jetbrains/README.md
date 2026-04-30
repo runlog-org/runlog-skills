@@ -14,6 +14,7 @@ JetBrains AI Assistant adapter of the Runlog client skills. Tracker: `[F25] Mult
 ## Quickstart
 
 1. **Get an API key** at https://runlog.org/register and set:
+
    ```sh
    export RUNLOG_API_KEY="sk-runlog-<your-key>"
    ```
@@ -25,6 +26,7 @@ JetBrains AI Assistant adapter of the Runlog client skills. Tracker: `[F25] Mult
    - Custom header: `Authorization: Bearer ${RUNLOG_API_KEY}`
 
    For plugin versions that read MCP config from a JSON file:
+
    ```json
    {
      "mcpServers": {

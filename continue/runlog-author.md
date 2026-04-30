@@ -19,7 +19,7 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Continue accesses via the terminal tool. Filesystem access depends on Continue's permission model in the version installed. |
 | **Draft persistence** | "Hold the draft in memory" | Write to `.runlog-author/<unit_id>.yaml` (workspace-scoped, gitignored). Continue's file-write tool persists across the agent-mode session. |
 
-```
+```text
 # add to your project's .gitignore:
 .runlog-author/
 ```

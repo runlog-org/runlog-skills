@@ -36,7 +36,7 @@ Three install paths, in order of preference for a given vendor:
 
 Claude Code users get the smoothest install — the plugin auto-registers the Runlog MCP server, so no manual MCP config edits:
 
-```
+```text
 /plugin marketplace add runlog-org/runlog-skills
 /plugin install runlog
 ```
@@ -72,7 +72,7 @@ The `common/` extraction means each vendor adapter references cross-vendor invar
 
 ## Layout
 
-```
+```text
 skills/
 ├── .claude-plugin/                         # ✅ Claude Code plugin marketplace + plugin manifest
 │   ├── marketplace.json

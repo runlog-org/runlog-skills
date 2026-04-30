@@ -19,7 +19,7 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Aider reads via `/run cat ~/.runlog/key` if needed (rarely — the verifier reads the key directly). Standard filesystem permissions apply. |
 | **Draft persistence** | "Hold the draft in memory" | Aider edits `.runlog-author/<unit_id>.yaml` as a normal repo file via `/code`. The draft becomes a real file the user can inspect; gitignore the directory. |
 
-```
+```text
 # add to your project's .gitignore:
 .runlog-author/
 ```
@@ -52,7 +52,7 @@ If the chained check returns anything other than `OK`, the agent surfaces a sing
 
 Aider has no heuristic prompt surface. Invocation is always explicit:
 
-```
+```text
 > publish that gotcha to runlog
 > /ask draft a runlog entry for the python_expr issue we just fixed
 > /run runlog-verifier verify .runlog-author/foo.yaml

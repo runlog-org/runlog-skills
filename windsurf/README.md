@@ -14,11 +14,13 @@ Windsurf (Codeium) adapter of the Runlog client skills. Tracker: `[F25] Multi-ve
 ## Quickstart
 
 1. **Get an API key** at https://runlog.org/register and set:
+
    ```sh
    export RUNLOG_API_KEY="sk-runlog-<your-key>"
    ```
 
 2. **Add Runlog to Windsurf's MCP config** at `~/.codeium/windsurf/mcp_config.json`:
+
    ```json
    {
      "mcpServers": {
@@ -33,9 +35,11 @@ Windsurf (Codeium) adapter of the Runlog client skills. Tracker: `[F25] Multi-ve
    ```
 
 3. **Install the read-side skill** as a Windsurf rule:
+
    ```sh
    cp skills/windsurf/SKILL.md .windsurfrules
    ```
+
    Or paste into Settings → Cascade → Rules → "Global Rules" for cross-workspace use.
 
 4. **(Optional) Install the write-side skill** for verified submissions — append `skills/windsurf/runlog-author.md` to `.windsurfrules`. Then build the verifier and generate a keypair (see SKILL.md §Setup).

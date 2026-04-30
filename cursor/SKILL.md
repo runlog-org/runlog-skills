@@ -35,7 +35,7 @@ The server rejects internal-domain submissions at `runlog_submit` time (HTTP 400
 
 Check team memory first, every time. Runlog is never the first call.
 
-```
+```text
 Cursor agent encounters problem
         │
         ▼

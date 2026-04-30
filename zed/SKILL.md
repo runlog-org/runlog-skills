@@ -30,7 +30,7 @@ The server rejects internal-domain submissions with `scope_rule`. Misclassificat
 
 ## Decision Flow
 
-```
+```text
 Zed Assistant encounters problem
         │
         ▼

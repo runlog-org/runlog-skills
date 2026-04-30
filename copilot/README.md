@@ -16,6 +16,7 @@ VS Code GitHub Copilot adapter of the Runlog client skills. Tracker: `[F25] Mult
 1. **Get an API key** at https://runlog.org/register.
 
 2. **Add Runlog to VS Code's MCP config** at `.vscode/mcp.json`:
+
    ```json
    {
      "servers": {
@@ -37,6 +38,7 @@ VS Code GitHub Copilot adapter of the Runlog client skills. Tracker: `[F25] Mult
      ]
    }
    ```
+
    The `${input:...}` form prompts on first use and stores in VS Code's secret store. Or use `${env:RUNLOG_API_KEY}` for the environment-variable form.
 
    > **VERIFY against current VS Code MCP docs.** The exact JSON shape (`servers` vs `mcpServers`, `type` enum values) has evolved.
@@ -45,11 +47,14 @@ VS Code GitHub Copilot adapter of the Runlog client skills. Tracker: `[F25] Mult
    - `github.copilot.chat.codeGeneration.useInstructionFiles`: `true`
 
 4. **Install the read-side skill** as a Copilot instruction:
+
    ```sh
    mkdir -p .github
    cat skills/copilot/SKILL.md >> .github/copilot-instructions.md
    ```
+
    Or as a scoped instruction with `applyTo` frontmatter:
+
    ```sh
    mkdir -p .github/instructions
    cp skills/copilot/SKILL.md .github/instructions/runlog.instructions.md

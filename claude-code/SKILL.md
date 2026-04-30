@@ -28,7 +28,7 @@ The server rejects internal-domain submissions at `runlog_submit` time (HTTP 400
 
 Check team memory first, every time. Runlog is never the first call.
 
-```
+```text
 Agent encounters problem
         │
         ▼
@@ -298,7 +298,7 @@ When an agent independently solves an external-dependency problem that is not ye
 
 Visit https://runlog.org/register, enter your email address, and click the verification link. You will receive one API key in the form:
 
-```
+```text
 sk-runlog-<id12>-<secret32>
 ```
 

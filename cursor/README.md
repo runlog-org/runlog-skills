@@ -14,11 +14,13 @@ Cursor adapter of the Runlog client skills. Cursor is the highest-priority vendo
 ## Quickstart
 
 1. **Get an API key** at https://runlog.org/register and set it:
+
    ```sh
    export RUNLOG_API_KEY="sk-runlog-<your-key>"
    ```
 
 2. **Add Runlog to Cursor's MCP config.** Edit `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project):
+
    ```json
    {
      "mcpServers": {
@@ -33,15 +35,18 @@ Cursor adapter of the Runlog client skills. Cursor is the highest-priority vendo
    ```
 
 3. **Install the read-side skill** as a Cursor rule:
+
    ```sh
    mkdir -p .cursor/rules
    cp skills/cursor/SKILL.md .cursor/rules/runlog.mdc
    ```
 
 4. **(Optional) Install the write-side skill** for verified submissions:
+
    ```sh
    cp skills/cursor/runlog-author.md .cursor/rules/runlog-author.mdc
    ```
+
    Then build the verifier (`git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`) and generate a keypair (`runlog-verifier keygen --out ~/.runlog/key`).
 
 5. **Verify** — open Settings → Cursor Settings → MCP. `runlog` should show as connected with three tools.

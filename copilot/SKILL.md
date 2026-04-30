@@ -30,7 +30,7 @@ The server rejects internal-domain submissions with `scope_rule`. Misclassificat
 
 ## Decision Flow
 
-```
+```text
 Copilot Chat encounters problem
         │
         ▼
@@ -185,7 +185,7 @@ applyTo: "src/integrations/**"
 
 Open Copilot Chat and switch to Agent mode. The available tools panel should list `runlog_search`, `runlog_submit`, `runlog_report`. Or ask:
 
-```
+```text
 @runlog can you call runlog_search with the query "stripe webhook"?
 ```
 

@@ -29,7 +29,7 @@ The skill MUST NOT propose publication on every external-dependency fix. Default
 
 ## Decision Flow
 
-```
+```text
 External-dependency fix just succeeded
         │
         ▼

@@ -32,7 +32,7 @@ The server rejects internal-domain submissions at `runlog_submit` time (HTTP 400
 
 ## Decision Flow
 
-```
+```text
 Cline encounters problem
         │
         ▼

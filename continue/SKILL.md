@@ -30,7 +30,7 @@ The server rejects internal-domain submissions at `runlog_submit` time with `sco
 
 ## Decision Flow
 
-```
+```text
 Continue agent encounters problem
         │
         ▼

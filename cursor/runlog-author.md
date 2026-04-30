@@ -19,7 +19,7 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Cursor reads via the terminal tool (no special secret store integration today). Filesystem access prompt may fire on first run. |
 | **Draft persistence** | "Hold the draft in memory" | Write the draft to `.runlog-author/<unit_id>.yaml` in the workspace (a gitignored scratch dir Cursor's agent owns). Survives across turns; cleaned up on successful submit. |
 
-```
+```text
 # add to your project's .gitignore:
 .runlog-author/
 ```

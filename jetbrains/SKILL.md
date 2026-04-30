@@ -32,7 +32,7 @@ The server rejects internal-domain submissions with `scope_rule`. Misclassificat
 
 ## Decision Flow
 
-```
+```text
 JetBrains AI Assistant encounters problem
         │
         ▼

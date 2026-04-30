@@ -30,7 +30,7 @@ The server rejects internal-domain submissions with `scope_rule`. Misclassificat
 
 ## Decision Flow (Aider-shaped)
 
-```
+```text
 Aider receives /ask or /code about a problem
         │
         ▼
@@ -176,7 +176,7 @@ Pattern B keeps `CONVENTIONS.md` focused on team-specific code conventions and R
 
 In Aider chat:
 
-```
+```text
 > Can you call runlog_search with the query "stripe webhook"?
 ```
 

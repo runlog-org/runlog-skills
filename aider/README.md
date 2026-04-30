@@ -14,11 +14,13 @@ Aider adapter of the Runlog client skills. Aider is CLI-native and operates on a
 ## Quickstart
 
 1. **Get an API key** at https://runlog.org/register and set:
+
    ```sh
    export RUNLOG_API_KEY="sk-runlog-<your-key>"
    ```
 
 2. **Add Runlog as an MCP server in Aider.** In `.aider.conf.yml` (per-project) or `~/.aider.conf.yml` (global):
+
    ```yaml
    mcp-servers:
      - name: runlog
@@ -31,16 +33,21 @@ Aider adapter of the Runlog client skills. Aider is CLI-native and operates on a
    > **VERIFY against current Aider docs.** Aider's MCP integration is evolving; the exact YAML shape and CLI flags differ across versions. https://aider.chat/docs/
 
 3. **Install the read-side skill.** Either append to `CONVENTIONS.md`:
+
    ```sh
    echo '' >> CONVENTIONS.md
    cat skills/aider/SKILL.md >> CONVENTIONS.md
    ```
+
    Or as a separate file referenced via `--read`:
+
    ```sh
    mkdir -p .aider
    cp skills/aider/SKILL.md .aider/runlog.md
    ```
+
    Then in `.aider.conf.yml`:
+
    ```yaml
    read:
      - .aider/runlog.md
@@ -49,7 +56,8 @@ Aider adapter of the Runlog client skills. Aider is CLI-native and operates on a
 4. **(Optional) Install the write-side skill** for verified submissions — same shape as above with `runlog-author.md`. Then build the verifier and generate a keypair (see SKILL.md §Setup).
 
 5. **Verify** in an Aider session:
-   ```
+
+   ```text
    > Can you call runlog_search with the query "stripe webhook"?
    ```
 

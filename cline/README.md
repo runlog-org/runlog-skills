@@ -14,11 +14,13 @@ Cline adapter of the Runlog client skills. Cline is the second-highest priority 
 ## Quickstart
 
 1. **Get an API key** at https://runlog.org/register and set:
+
    ```sh
    export RUNLOG_API_KEY="sk-runlog-<your-key>"
    ```
 
 2. **Add Runlog to Cline's MCP settings.** Open Cline → Settings → MCP Servers → "Configure MCP Servers" (this opens `cline_mcp_settings.json`):
+
    ```json
    {
      "mcpServers": {
@@ -35,16 +37,20 @@ Cline adapter of the Runlog client skills. Cline is the second-highest priority 
    ```
 
 3. **Install the read-side skill** as a Cline rule:
+
    ```sh
    mkdir -p .clinerules
    cp skills/cline/SKILL.md .clinerules/runlog.md
    ```
+
    Cline auto-loads every `.md` file in `.clinerules/` into the agent's context.
 
 4. **(Optional) Install the write-side skill** for verified submissions:
+
    ```sh
    cp skills/cline/runlog-author.md .clinerules/runlog-author.md
    ```
+
    Then build the verifier (`git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`) and generate a keypair (`runlog-verifier keygen --out ~/.runlog/key`).
 
 5. **Verify** — open Cline's MCP Servers panel; `runlog` should show as connected with three tools.

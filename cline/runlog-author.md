@@ -20,7 +20,7 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **Draft persistence** | "Hold the draft in memory" | Write to `.runlog-author/<unit_id>.yaml` (workspace-scoped, gitignored). Cline's file-write tool persists across plan/act transitions cleanly. |
 | **MCP `runlog_submit` call** | "Pass `verification_signature: <bundle>`" | Cline's MCP integration handles the call; the agent assembles the JSON arguments per the standard MCP tool-call shape. |
 
-```
+```text
 # add to your project's .gitignore:
 .runlog-author/
 ```

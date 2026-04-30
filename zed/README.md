@@ -14,11 +14,13 @@ Zed adapter of the Runlog client skills. Tracker: `[F25] Multi-vendor MCP skill 
 ## Quickstart
 
 1. **Get an API key** at https://runlog.org/register and set:
+
    ```sh
    export RUNLOG_API_KEY="sk-runlog-<your-key>"
    ```
 
 2. **Add Runlog to Zed's `context_servers`** in `~/.config/zed/settings.json` (global) or `.zed/settings.json` (workspace). HTTP transport (newer Zed):
+
    ```json
    {
      "context_servers": {
@@ -34,6 +36,7 @@ Zed adapter of the Runlog client skills. Tracker: `[F25] Multi-vendor MCP skill 
    ```
 
    Or stdio bridge (older Zed):
+
    ```json
    {
      "context_servers": {
@@ -55,10 +58,13 @@ Zed adapter of the Runlog client skills. Tracker: `[F25] Multi-vendor MCP skill 
    > **VERIFY against current Zed docs** at https://zed.dev/docs/.
 
 3. **Install the read-side skill** as a Zed rule:
+
    ```sh
    cp skills/zed/SKILL.md .rules
    ```
+
    Or global:
+
    ```sh
    mkdir -p ~/.config/zed
    cp skills/zed/SKILL.md ~/.config/zed/rules.md

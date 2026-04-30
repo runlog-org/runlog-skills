@@ -19,7 +19,7 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Read via the terminal tool; standard filesystem permissions. |
 | **Draft persistence** | "Hold the draft in memory" | Zed Assistant can edit files directly; write the draft to `.runlog-author/<unit_id>.yaml` (gitignored). The user can inspect the draft in a Zed buffer before approving the verifier call. |
 
-```
+```text
 # add to your project's .gitignore:
 .runlog-author/
 ```

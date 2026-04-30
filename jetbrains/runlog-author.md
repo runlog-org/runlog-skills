@@ -21,7 +21,7 @@ Author-side cross-vendor invariants live at `skills/common/runlog-author-contrac
 | **`~/.runlog/key` access** | "Read the keypair file" | Read via the terminal tool; standard filesystem permissions. |
 | **Draft persistence** | "Hold the draft in memory" | Junie can edit files directly via JetBrains' refactoring-aware edit surface; write the draft to `.runlog-author/<unit_id>.yaml` (gitignored). The user can inspect the draft in the editor before approving the verifier call. |
 
-```
+```text
 # add to your project's .gitignore:
 .runlog-author/
 ```

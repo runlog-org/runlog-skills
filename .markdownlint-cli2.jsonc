@@ -26,7 +26,32 @@
     // bodies start with a YAML front-matter block and use ## as
     // their first heading (the H1-equivalent name lives in
     // front-matter). This is the cross-vendor convention.
-    "MD041": false
+    "MD041": false,
+
+    // MD029 ol-prefix — disabled. The Setup sections in the
+    // per-vendor runlog-author adapters interleave numbered steps
+    // with top-level fenced code blocks (curl + install commands).
+    // The fences are intentionally not indented under the list
+    // item — they read better as flush-left blocks at this scale,
+    // and CommonMark renders the numbering correctly regardless.
+    // Forcing indented continuations would just reflow ~10 files
+    // for no rendered-output gain.
+    "MD029": false,
+
+    // MD046 code-block-style — disabled. The canonical
+    // runlog-author/SKILL.md uses indented code blocks inside
+    // numbered steps where fenced blocks would force a language
+    // pick on shell snippets that span multiple kinds of commands
+    // (env vars + curl + install). Mixing indented and fenced is
+    // a deliberate stylistic choice in this body.
+    "MD046": false,
+
+    // MD028 no-blanks-blockquote — disabled. The Zed README pairs
+    // a security note with a "VERIFY against current docs" note
+    // as two consecutive blockquotes separated by a blank line
+    // (intentional visual separation; the rule would treat them
+    // as one).
+    "MD028": false
   },
   "ignores": [
     "node_modules",

@@ -50,7 +50,7 @@ Vendors marked "print only" already share a single file with your other rules â€
 
 The smoothest install for Claude Code is the official plugin, which also auto-registers the Runlog MCP server (no manual config edit):
 
-```
+```text
 /plugin marketplace add runlog-org/runlog-skills
 /plugin install runlog
 ```

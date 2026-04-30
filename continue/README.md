@@ -14,11 +14,13 @@ Continue.dev adapter of the Runlog client skills. Continue is the third-priority
 ## Quickstart
 
 1. **Get an API key** at https://runlog.org/register and set:
+
    ```sh
    export RUNLOG_API_KEY="sk-runlog-<your-key>"
    ```
 
 2. **Add Runlog to Continue's config.** The exact key name has changed across Continue versions. For Continue 1.0+ (`config.yaml`):
+
    ```yaml
    mcpServers:
      - name: runlog
@@ -30,6 +32,7 @@ Continue.dev adapter of the Runlog client skills. Continue is the third-priority
    ```
 
    For older versions (`config.json`):
+
    ```json
    {
      "experimental": {
@@ -53,11 +56,14 @@ Continue.dev adapter of the Runlog client skills. Continue is the third-priority
    > **VERIFY against Continue's current docs** at https://docs.continue.dev/ before publishing — the MCP config schema has evolved.
 
 3. **Install the read-side skill** as a Continue rule. Continue 1.0+ loads every `.md` under `.continue/rules/`:
+
    ```sh
    mkdir -p .continue/rules
    cp skills/continue/SKILL.md .continue/rules/runlog.md
    ```
+
    Or, for older versions, add an inline rule to `config.yaml`:
+
    ```yaml
    rules:
      - name: runlog
