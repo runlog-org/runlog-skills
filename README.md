@@ -45,13 +45,15 @@ Then `export RUNLOG_API_KEY=sk-runlog-<your-key>` (key from <https://runlog.org/
 
 ### 2. Cross-vendor MCP install: `npx add-mcp` (Claude Code, Cursor, Cline)
 
-For non-Claude-Code hosts that `add-mcp` supports, this is the one-liner. Neon's [`add-mcp`](https://github.com/neondatabase/add-mcp) reads Runlog's [Official MCP Registry](https://registry.modelcontextprotocol.io/) entry (`org.runlog/runlog`) and auto-detects every supported agent on the machine, writing the correct config for each:
+The one-liner that covers the three Runlog vendors `add-mcp` writes a working config for. Neon's [`add-mcp`](https://github.com/neondatabase/add-mcp) reads Runlog's [Official MCP Registry](https://registry.modelcontextprotocol.io/) entry (`org.runlog/runlog`) and auto-detects every supported agent on the machine, writing the correct config for each:
 
 ```sh
 npx add-mcp https://api.runlog.org/mcp
 ```
 
-Pass `-a <agent>` to target one host (`claude-code`, `cursor`, `cline`); pass `-g` for a global config rather than project-scoped. Supported targets via `add-mcp` today: Claude Code, Cursor, Cline (both VS Code extension and `cline-cli`). **Continue.dev, Windsurf, Aider, VS Code Copilot, JetBrains, and Zed are not covered by `add-mcp`** — use path 3 or 4 for those vendors.
+Pass `-a <agent>` to target one host (`claude-code`, `cursor`, `cline`); pass `-g` for a global config rather than project-scoped. Validated for: Claude Code, Cursor, Cline (both VS Code extension and `cline-cli`).
+
+**Continue, Windsurf, Aider, VS Code Copilot, and JetBrains are not in `add-mcp`'s supported set today** — use path 3 or 4 for those vendors. Zed *is* in `add-mcp`'s supported set but isn't validated for Runlog yet under this slice; treat it as path 3/4 until M01-S02 covers the wider host fan-out.
 
 `add-mcp` only writes the MCP server config; the per-vendor `SKILL.md` body still needs to land in the host's rules path. Either copy it manually (path 4) or run `npx @runlog/install <vendor> --write` (path 3) for the skill side. The Claude Code plugin (path 1) does both in one step.
 
