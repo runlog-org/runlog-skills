@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "runlog-installer"
+version = "0.1.0"
+description = "Single-command installer for the Runlog MCP server across 9 AI coding hosts."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+authors = [{ name = "Volker Otto", email = "hello@volkerotto.net" }]
+dependencies = []  # stdlib only
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+runlog = "runlog_install.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/runlog_install"]
