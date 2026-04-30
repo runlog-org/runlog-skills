@@ -41,8 +41,8 @@ class ClaudeCodeHost:
         skill_src = type(self)._SKILL_SRC
         if not skill_src.is_file():
             raise FileNotFoundError(
-                "could not find claude-code/SKILL.md — install from a "
-                "runlog-skills checkout or use --skill-source"
+                f"Source skill file not found: claude-code/SKILL.md "
+                f"(expected at {skill_src})"
             )
 
         # 2. Copy SKILL.md to destination (mkdir -p parent).

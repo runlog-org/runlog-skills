@@ -22,3 +22,9 @@ runlog = "runlog_install.cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/runlog_install"]
+
+[tool.pytest.ini_options]
+# Allow `pytest` from a fresh clone to import the package without an editable
+# install or PYTHONPATH=src wrapper. Matches the src/ layout.
+pythonpath = ["src"]
+testpaths = ["tests"]

@@ -67,9 +67,6 @@ def test_install_uses_env_var(monkeypatch):
     fake_cls, fake_host = _make_fake_host_class()
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
     monkeypatch.setenv("RUNLOG_API_KEY", "env-key-abc")
-    # Ensure --api-key is absent so env path is exercised.
-    monkeypatch.delenv("RUNLOG_API_KEY", raising=False)
-    monkeypatch.setenv("RUNLOG_API_KEY", "env-key-abc")
 
     rc = cli.main(["install", "--target", "cursor"])
 
@@ -94,26 +91,9 @@ def test_install_empty_interactive_input_returns_nonzero(monkeypatch, capsys):
 
 
 def test_install_unknown_target_returns_nonzero(monkeypatch, capsys):
-    """install --target unknown → non-zero, error lists available targets."""
-    # Raise KeyError as the real registry does for unknown names.
-    def _raise(name):
-        raise KeyError(f"Unknown target {name!r}. Available targets: claude, cursor")
-
-    monkeypatch.setattr("runlog_install.registry.get_host", _raise)
-
-    # argparse itself rejects values not in `choices`, so we bypass that by
-    # patching the choices list too.
-    original_build = cli._build_parser
-
-    def _patched_build():
-        import argparse as _ap
-        p = original_build()
-        # Rewrite choices to allow "unknown" through argparse so the registry
-        # path is exercised.
-        return p
-
-    # Instead, call main() with a choices-valid but registry-rejected value.
-    # Use a direct registry patch approach: pretend "claude" hits KeyError.
+    """install --target X where registry rejects X → non-zero + 'Available targets' on stderr."""
+    # argparse already rejects values outside `choices`, so simulate the
+    # registry-rejection path by making get_host raise for a choices-valid name.
     monkeypatch.setattr(
         "runlog_install.registry.get_host",
         lambda name: (_ for _ in ()).throw(
