@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import argparse
+import getpass
+import os
 import sys
 from typing import Sequence
 
+from runlog_install import registry
+
 _TARGETS = ("claude", "cursor")
+_REGISTER_URL = "https://runlog.org/register"
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -57,20 +62,46 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "install":
-        # TODO: look up host via registry, call host.install(api_key=args.api_key)
-        print(
-            f"[TODO] install --target {args.target} --api-key {args.api_key!r} "
-            "— not yet implemented in scaffold; a follow-up task will fill this in."
-        )
-        return 0
+        try:
+            host_cls = registry.get_host(args.target)
+            host = host_cls()
+
+            # Resolve API key: CLI arg > env var > interactive prompt.
+            if args.api_key:
+                api_key = args.api_key
+            elif os.environ.get("RUNLOG_API_KEY"):
+                api_key = os.environ["RUNLOG_API_KEY"]
+            else:
+                api_key = getpass.getpass(
+                    f"Runlog API key ({_REGISTER_URL} if you don't have one): "
+                )
+                if not api_key:
+                    print(
+                        f"No API key provided. Register at {_REGISTER_URL}",
+                        file=sys.stderr,
+                    )
+                    return 1
+
+            host.install(api_key)
+            print(f"Installed Runlog skill + MCP block for {host.name}.")
+            print("Restart your editor for the changes to take effect.")
+            return 0
+
+        except (FileNotFoundError, KeyError, OSError) as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
 
     if args.command == "uninstall":
-        # TODO: look up host via registry, call host.uninstall()
-        print(
-            f"[TODO] uninstall --target {args.target} "
-            "— not yet implemented in scaffold; a follow-up task will fill this in."
-        )
-        return 0
+        try:
+            host_cls = registry.get_host(args.target)
+            host = host_cls()
+            host.uninstall()
+            print(f"Uninstalled Runlog from {host.name}.")
+            return 0
+
+        except (FileNotFoundError, KeyError, OSError) as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
 
     # Should be unreachable (argparse enforces required subcommand).
     parser.print_help(sys.stderr)

@@ -1,2 +1,9 @@
-# Host adapter registry — populated by follow-up tasks (claude-code, cursor, …).
-# HOSTS: dict[str, type] = {}  # uncomment when first adapter lands
+"""Registry of host adapters keyed by --target value."""
+
+from runlog_install.hosts.claude_code import ClaudeCodeHost
+from runlog_install.hosts.cursor import CursorHost
+
+HOSTS: dict[str, type] = {
+    "claude": ClaudeCodeHost,
+    "cursor": CursorHost,
+}
