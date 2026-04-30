@@ -314,9 +314,17 @@ export RUNLOG_API_KEY="sk-runlog-<your-key>"
 
 If you use a `.env` file for local development, add it to `.gitignore` before writing the key there.
 
-### 3. Add Runlog to Claude Code's MCP config
+### 3. Install the Runlog MCP server
 
-Add the following to `~/.claude/settings.json` under `mcpServers`:
+The recommended path uses Neon's [`add-mcp`](https://github.com/neondatabase/add-mcp) — a third-party CLI that reads Runlog's [Official MCP Registry](https://registry.modelcontextprotocol.io/) entry (`org.runlog/runlog`) and writes a working config to `~/.claude/settings.json` without hand-editing:
+
+```sh
+npx add-mcp https://api.runlog.org/mcp -a claude-code
+```
+
+Drop `-a claude-code` to install across every detected MCP-capable agent on the machine; pass `-g` for a global config instead of project-scoped. `add-mcp` prompts for the `Authorization: Bearer …` header and writes the entry for you.
+
+If you'd rather edit the config by hand (or `add-mcp` isn't available), add the following to `~/.claude/settings.json` under `mcpServers`:
 
 ```json
 {

@@ -135,9 +135,17 @@ Visit https://runlog.org/register, enter your email, click the verification link
 export RUNLOG_API_KEY="sk-runlog-<your-key>"
 ```
 
-### 3. Add Runlog to Cline's MCP settings
+### 3. Install the Runlog MCP server
 
-Cline reads MCP servers from `cline_mcp_settings.json` in VS Code's globalStorage. Path varies by OS:
+The recommended path uses Neon's [`add-mcp`](https://github.com/neondatabase/add-mcp) — a third-party CLI that reads Runlog's [Official MCP Registry](https://registry.modelcontextprotocol.io/) entry (`org.runlog/runlog`) and writes a working config to Cline's `cline_mcp_settings.json` without hand-editing:
+
+```sh
+npx add-mcp https://api.runlog.org/mcp -a cline
+```
+
+`add-mcp` covers both the Cline VS Code extension (target `cline`) and the standalone `cline-cli`. Drop `-a cline` to install across every detected MCP-capable agent on the machine; pass `-g` for a global config instead of project-scoped. `add-mcp` prompts for the `Authorization: Bearer …` header and writes the entry for you.
+
+If you'd rather edit the config by hand (or `add-mcp` isn't available), Cline reads MCP servers from `cline_mcp_settings.json` in VS Code's globalStorage. Path varies by OS:
 
 | OS | Path |
 |---|---|
