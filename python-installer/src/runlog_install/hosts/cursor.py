@@ -6,8 +6,6 @@ the runlog.mdc rule file to ~/.cursor/rules/.
 
 from __future__ import annotations
 
-import os
-import stat
 from pathlib import Path
 
 from runlog_install import jsonc
@@ -31,7 +29,7 @@ class CursorHost:
         """Write runlog.mdc and merge the runlog MCP block into mcp.json."""
         # 1. Copy SKILL.md to SKILL_DEST (mkdir -p parent)
         skill_src = self._SKILL_SRC
-        if not skill_src.exists():
+        if not skill_src.is_file():
             raise FileNotFoundError(
                 f"Source skill file not found: cursor/SKILL.md (expected at {skill_src})"
             )
@@ -60,7 +58,7 @@ class CursorHost:
         # 4. Write back, mode 0600
         self.SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
         self.SETTINGS_PATH.write_text(text, encoding="utf-8")
-        os.chmod(self.SETTINGS_PATH, stat.S_IRUSR | stat.S_IWUSR)
+        self.SETTINGS_PATH.chmod(0o600)
 
     def uninstall(self) -> None:
         """Remove runlog.mdc and the runlog MCP block from mcp.json."""

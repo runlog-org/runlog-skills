@@ -34,11 +34,11 @@ class ClaudeCodeHost:
 
     def install(self, api_key: str) -> None:
         """Write SKILL.md and merge the runlog MCP block into settings.json."""
-        skill_dest = type(self).SKILL_DEST
-        settings_path = type(self).SETTINGS_PATH
+        skill_dest = self.SKILL_DEST
+        settings_path = self.SETTINGS_PATH
 
         # 1. Validate source SKILL.md exists.
-        skill_src = type(self)._SKILL_SRC
+        skill_src = self._SKILL_SRC
         if not skill_src.is_file():
             raise FileNotFoundError(
                 f"Source skill file not found: claude-code/SKILL.md "
@@ -83,8 +83,8 @@ class ClaudeCodeHost:
 
     def uninstall(self) -> None:
         """Remove SKILL.md and the runlog MCP block from settings.json."""
-        skill_dest = type(self).SKILL_DEST
-        settings_path = type(self).SETTINGS_PATH
+        skill_dest = self.SKILL_DEST
+        settings_path = self.SETTINGS_PATH
 
         # 1. Remove SKILL.md; clean up empty parent dirs.
         skill_dest.unlink(missing_ok=True)
