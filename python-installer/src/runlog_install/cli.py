@@ -10,9 +10,9 @@ import shutil
 import subprocess
 import sys
 
-from runlog_install import registry
+from runlog_install.hosts import HOSTS
 
-_TARGETS = ("aider", "claude", "continue", "copilot", "cursor", "windsurf", "zed")
+_TARGETS = tuple(sorted(HOSTS))
 _REGISTER_URL = "https://runlog.org/register"
 _VERIFIER_RELEASE_BASE = (
     "https://github.com/runlog-org/runlog-verifier/releases/latest/download"
@@ -99,8 +99,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "install":
         try:
-            host_cls = registry.get_host(args.target)
-            host = host_cls()
+            host = HOSTS[args.target]()
 
             if host.mode == "delegated":
                 # Delegated hosts don't need an API key — skip resolution.
@@ -139,19 +138,18 @@ def main(argv: list[str] | None = None) -> int:
 
             return 0
 
-        except (FileNotFoundError, KeyError, OSError) as exc:
+        except (FileNotFoundError, KeyError, OSError, ValueError, RuntimeError) as exc:
             print(f"Error: {exc}", file=sys.stderr)
             return 1
 
     if args.command == "uninstall":
         try:
-            host_cls = registry.get_host(args.target)
-            host = host_cls()
+            host = HOSTS[args.target]()
             host.uninstall()
             print(f"Uninstalled Runlog from {host.name}.")
             return 0
 
-        except (FileNotFoundError, KeyError, OSError) as exc:
+        except (FileNotFoundError, KeyError, OSError, ValueError, RuntimeError) as exc:
             print(f"Error: {exc}", file=sys.stderr)
             return 1
 
@@ -166,6 +164,7 @@ def main(argv: list[str] | None = None) -> int:
 # ---------------------------------------------------------------------------
 # Register helpers
 # ---------------------------------------------------------------------------
+
 
 def _detect_platform_slug() -> tuple[str, bool]:
     """Return (slug, is_guess). is_guess is True if we couldn't match cleanly."""
