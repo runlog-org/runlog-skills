@@ -14,19 +14,21 @@ Also standardises how each agent framework tracks `kb:<id>` entries in its worki
 
 All 9 vendor adapters (Claude Code + 8 cross-vendor expansion) are operational on the read side against the live MCP server. The write side ships per-vendor too; end-to-end functionality is gated on three F24 prerequisites — see [`runlog-author/DESIGN.md`](./runlog-author/DESIGN.md) §Status.
 
-| Vendor | Read | Write | Read-side install | Notes |
-|---|---|---|---|---|
-| **Claude Code** | ✅ | ✅ | [`claude-code/SKILL.md`](./claude-code/SKILL.md) | Reference adapter |
-| **Cursor** | ✅ | ✅ | [`cursor/SKILL.md`](./cursor/SKILL.md) → `.cursor/rules/runlog.mdc` | Highest priority after Claude Code |
-| **Cline** | ✅ | ✅ | [`cline/SKILL.md`](./cline/SKILL.md) → `.clinerules/runlog.md` | Open-source, MCP-native |
-| **Continue.dev** | ✅ | ✅ | [`continue/SKILL.md`](./continue/SKILL.md) → `.continue/config.yaml` rules block | Open-source, MCP-native |
-| **Windsurf** | ✅ | ✅ | [`windsurf/SKILL.md`](./windsurf/SKILL.md) → `.windsurfrules` | Codeium-based |
-| **Aider** | ✅ * | ✅ * | [`aider/SKILL.md`](./aider/SKILL.md) → `CONVENTIONS.md` or `--read` | * MCP support is version-dependent |
-| **VS Code + GitHub Copilot** | ✅ | ✅ | [`copilot/SKILL.md`](./copilot/SKILL.md) → `.github/copilot-instructions.md` | Requires Copilot agent mode |
-| **JetBrains AI Assistant** | ✅ * | ✅ * | [`jetbrains/SKILL.md`](./jetbrains/SKILL.md) → AI guidelines | * Tool-use varies by IDE / plugin version |
-| **Zed** | ✅ * | ✅ * | [`zed/SKILL.md`](./zed/SKILL.md) → `.rules` | * HTTP `context_servers` schema is evolving |
+| Vendor | Read | Write | Harvest | Read-side install | Notes |
+|---|---|---|---|---|---|
+| **Claude Code** | ✅ | ✅ | ✅ | [`claude-code/SKILL.md`](./claude-code/SKILL.md) | Reference adapter |
+| **Cursor** | ✅ | ✅ | ✅ | [`cursor/SKILL.md`](./cursor/SKILL.md) → `.cursor/rules/runlog.mdc` | Highest priority after Claude Code |
+| **Cline** | ✅ | ✅ | ✅ | [`cline/SKILL.md`](./cline/SKILL.md) → `.clinerules/runlog.md` | Open-source, MCP-native |
+| **Continue.dev** | ✅ | ✅ | ✅ | [`continue/SKILL.md`](./continue/SKILL.md) → `.continue/config.yaml` rules block | Open-source, MCP-native |
+| **Windsurf** | ✅ | ✅ | ✅ | [`windsurf/SKILL.md`](./windsurf/SKILL.md) → `.windsurfrules` | Codeium-based |
+| **Aider** | ✅ * | ✅ * | ✅ * | [`aider/SKILL.md`](./aider/SKILL.md) → `CONVENTIONS.md` or `--read` | * MCP support is version-dependent |
+| **VS Code + GitHub Copilot** | ✅ | ✅ | ✅ | [`copilot/SKILL.md`](./copilot/SKILL.md) → `.github/copilot-instructions.md` | Requires Copilot agent mode |
+| **JetBrains AI Assistant** | ✅ * | ✅ * | ✅ * | [`jetbrains/SKILL.md`](./jetbrains/SKILL.md) → AI guidelines | * Tool-use varies by IDE / plugin version |
+| **Zed** | ✅ * | ✅ * | ✅ * | [`zed/SKILL.md`](./zed/SKILL.md) → `.rules` | * HTTP `context_servers` schema is evolving |
 
 Asterisks (`*`) flag adapters whose MCP integration is evolving in the upstream vendor — the adapter is shipped and works against today's vendor capabilities, but check the per-vendor README's "VERIFY" notes against current vendor docs before publishing your config.
+
+Three skill types ship per vendor: **read** ([`SKILL.md`](./claude-code/SKILL.md)) wraps `runlog_search` so the agent consults the registry when team memory falls short; **author / write** ([`runlog-author.md`](./runlog-author/SKILL.md)) drives the verifier-loop submission flow mid-flow, right after a third-party-system gotcha is solved; **harvest** ([`runlog-harvest.md`](./runlog-harvest/SKILL.md)) is the end-of-session retrospective lever — invoked explicitly via `/runlog:harvest` (or each vendor's literal — see per-vendor READMEs), it scans the just-finished session for external-dependency findings the agent missed in-flight and routes selected ones through the canonical author flow. The canonical bodies under [`runlog-author/`](./runlog-author/SKILL.md) and [`runlog-harvest/`](./runlog-harvest/SKILL.md) are the source of truth; per-vendor folders inherit them and swap orchestration glue.
 
 ## Install
 
@@ -118,55 +120,71 @@ skills/
 │   ├── index.js
 │   └── README.md
 ├── claude-code/                            # ✅ Reference adapter (read side; canonical body)
-│   └── SKILL.md
+│   ├── SKILL.md
+│   └── runlog-harvest.md
+├── commands/                               # ✅ Slash-command shims (e.g. `/runlog:harvest`)
+│   └── harvest.md
 ├── runlog-author/                          # ✅ Canonical author body (vendor-agnostic)
+│   ├── SKILL.md
+│   └── DESIGN.md                           #     design rationale + open questions
+├── runlog-harvest/                         # ✅ Canonical harvest body (vendor-agnostic)
 │   ├── SKILL.md
 │   └── DESIGN.md                           #     design rationale + open questions
 ├── common/                                 # ✅ Cross-vendor invariants
 │   ├── README.md
 │   ├── four-point-client-contract.md       # ✅ shipped
 │   ├── runlog-author-contract.md           # ✅ shipped
+│   ├── runlog-harvest-contract.md          # ✅ shipped
 │   ├── dependency-manifest.md              # ⏳ planned — extracted when 2nd consumer ships
 │   └── reporting-conventions.md            # ⏳ planned — extracted when 2nd consumer ships
 ├── cursor/                                 # ✅ shipped
 │   ├── README.md
 │   ├── SKILL.md
-│   └── runlog-author.md
+│   ├── runlog-author.md
+│   └── runlog-harvest.md
 ├── cline/                                  # ✅ shipped
 │   ├── README.md
 │   ├── SKILL.md
-│   └── runlog-author.md
+│   ├── runlog-author.md
+│   └── runlog-harvest.md
 ├── continue/                               # ✅ shipped
 │   ├── README.md
 │   ├── SKILL.md
-│   └── runlog-author.md
+│   ├── runlog-author.md
+│   └── runlog-harvest.md
 ├── windsurf/                               # ✅ shipped
 │   ├── README.md
 │   ├── SKILL.md
-│   └── runlog-author.md
+│   ├── runlog-author.md
+│   └── runlog-harvest.md
 ├── aider/                                  # ✅ shipped (caveats)
 │   ├── README.md
 │   ├── SKILL.md
-│   └── runlog-author.md
+│   ├── runlog-author.md
+│   └── runlog-harvest.md
 ├── copilot/                                # ✅ shipped
 │   ├── README.md
 │   ├── SKILL.md
-│   └── runlog-author.md
+│   ├── runlog-author.md
+│   └── runlog-harvest.md
 ├── jetbrains/                              # ✅ shipped (caveats)
 │   ├── README.md
 │   ├── SKILL.md
-│   └── runlog-author.md
+│   ├── runlog-author.md
+│   └── runlog-harvest.md
 ├── zed/                                    # ✅ shipped (caveats)
 │   ├── README.md
 │   ├── SKILL.md
-│   └── runlog-author.md
+│   ├── runlog-author.md
+│   └── runlog-harvest.md
 └── README.md                               # this file
 ```
 
 ## Invariants every adapter MUST honour
 
-- The four rules in [`common/four-point-client-contract.md`](./common/four-point-client-contract.md) — both read and write skills inherit.
+- The four rules in [`common/four-point-client-contract.md`](./common/four-point-client-contract.md) — read, write, and harvest skills all inherit.
 - The author-side rules in [`common/runlog-author-contract.md`](./common/runlog-author-contract.md) — adds the submission-flow constraints.
+- The harvest-side rules in [`common/runlog-harvest-contract.md`](./common/runlog-harvest-contract.md) — adds the retrospective-scan, picker-grammar, and route-to-author constraints.
 
 The contract is framework-agnostic; per-vendor adapters swap orchestration glue, not the rules.
 

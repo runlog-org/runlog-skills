@@ -10,6 +10,7 @@ JetBrains AI Assistant adapter of the Runlog client skills. Tracker: `[F25] Mult
 |---|---|
 | [`SKILL.md`](./SKILL.md) | Read-side skill body — install in the project's AI guidelines or as a custom prompt |
 | [`runlog-author.md`](./runlog-author.md) | Write-side adapter |
+| [`runlog-harvest.md`](./runlog-harvest.md) | Harvest skill — end-of-session retrospective submission flow |
 
 ## Quickstart
 
@@ -46,7 +47,9 @@ JetBrains AI Assistant adapter of the Runlog client skills. Tracker: `[F25] Mult
 
 4. **(Optional) Install the write-side skill** for verified submissions — same surface with `runlog-author.md`. Then build the verifier and generate a keypair (see SKILL.md §Setup).
 
-5. **Verify** — open AI Assistant chat (or Junie); `runlog_search`, `runlog_submit`, `runlog_report` should appear in the available tools when MCP is wired correctly.
+5. **(Optional) Install the harvest skill** for end-of-session retrospective submission — same surface with `runlog-harvest.md` (paste into AI Assistant Guidelines or the project-scoped guidelines file). Invoke at session end with the literal "harvest this session to runlog" inside Junie agent mode. Same verifier prerequisites as the write-side skill.
+
+6. **Verify** — open AI Assistant chat (or Junie); `runlog_search`, `runlog_submit`, `runlog_report` should appear in the available tools when MCP is wired correctly.
 
 ## Cross-vendor invariants
 
@@ -54,6 +57,7 @@ Every JetBrains adapter MUST honour:
 
 - The four rules in [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md).
 - The author-side rules in [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md).
+- The harvest-side rules in [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) (when running the harvest skill).
 
 The contract is framework-agnostic; JetBrains adapters swap orchestration glue (Settings UI for MCP config, AI guidelines for rule loading, Junie agent-mode dispatch), not the rules.
 

@@ -10,6 +10,7 @@ Continue.dev adapter of the Runlog client skills. Continue is the third-priority
 |---|---|
 | [`SKILL.md`](./SKILL.md) | Read-side skill body — install as a Continue rule (see Quickstart) |
 | [`runlog-author.md`](./runlog-author.md) | Write-side adapter |
+| [`runlog-harvest.md`](./runlog-harvest.md) | Harvest skill — end-of-session retrospective submission flow |
 
 ## Quickstart
 
@@ -73,7 +74,15 @@ Continue.dev adapter of the Runlog client skills. Continue is the third-priority
 
 4. **(Optional) Install the write-side skill** for verified submissions — same shape as above with `name: runlog-author` and the body of `skills/continue/runlog-author.md`. Then build the verifier and generate a keypair (see SKILL.md §Setup).
 
-5. **Verify** — open Continue's panel; `runlog_search`, `runlog_submit`, `runlog_report` should appear in the tool list.
+5. **(Optional) Install the harvest skill** for end-of-session retrospective submission. Continue 1.0+:
+
+   ```sh
+   cp skills/continue/runlog-harvest.md .continue/rules/runlog-harvest.md
+   ```
+
+   Or, for older versions, add an inline rule with `name: runlog-harvest` and the body of `skills/continue/runlog-harvest.md`. Invoke at session end with the literal "harvest this session to runlog". Same verifier prerequisites as the write-side skill.
+
+6. **Verify** — open Continue's panel; `runlog_search`, `runlog_submit`, `runlog_report` should appear in the tool list.
 
 ## Config file locations
 
@@ -90,6 +99,7 @@ Every Continue adapter MUST honour:
 
 - The four rules in [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md).
 - The author-side rules in [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md) (when running the write skill).
+- The harvest-side rules in [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) (when running the harvest skill).
 
 The contract is framework-agnostic; Continue adapters swap orchestration glue (`config.yaml` schema, terminal-tool dispatch, agent-mode iteration), not the rules.
 

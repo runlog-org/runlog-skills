@@ -10,6 +10,7 @@ Windsurf (Codeium) adapter of the Runlog client skills. Tracker: `[F25] Multi-ve
 |---|---|
 | [`SKILL.md`](./SKILL.md) | Read-side skill body — install as `.windsurfrules` (workspace) or in Windsurf global rules |
 | [`runlog-author.md`](./runlog-author.md) | Write-side adapter |
+| [`runlog-harvest.md`](./runlog-harvest.md) | Harvest skill — end-of-session retrospective submission flow |
 
 ## Quickstart
 
@@ -44,7 +45,9 @@ Windsurf (Codeium) adapter of the Runlog client skills. Tracker: `[F25] Multi-ve
 
 4. **(Optional) Install the write-side skill** for verified submissions — append `skills/windsurf/runlog-author.md` to `.windsurfrules`. Then build the verifier and generate a keypair (see SKILL.md §Setup).
 
-5. **Verify** — open Cascade; `runlog_search`, `runlog_submit`, `runlog_report` should appear in the tool list.
+5. **(Optional) Install the harvest skill** for end-of-session retrospective submission — append `skills/windsurf/runlog-harvest.md` to `.windsurfrules`. Invoke at session end with the literal "harvest this session to runlog". Same verifier prerequisites as the write-side skill.
+
+6. **Verify** — open Cascade; `runlog_search`, `runlog_submit`, `runlog_report` should appear in the tool list.
 
 ## Cross-vendor invariants
 
@@ -52,6 +55,7 @@ Every Windsurf adapter MUST honour:
 
 - The four rules in [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md).
 - The author-side rules in [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md).
+- The harvest-side rules in [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) (when running the harvest skill).
 
 The contract is framework-agnostic; Windsurf adapters swap orchestration glue (Cascade integration, `.windsurfrules` rule loading, terminal-tool dispatch), not the rules.
 

@@ -10,6 +10,7 @@ Cline adapter of the Runlog client skills. Cline is the second-highest priority 
 |---|---|
 | [`SKILL.md`](./SKILL.md) | Read-side skill body — install as `.clinerules/runlog.md` |
 | [`runlog-author.md`](./runlog-author.md) | Write-side adapter — install as `.clinerules/runlog-author.md` |
+| [`runlog-harvest.md`](./runlog-harvest.md) | Harvest skill — end-of-session retrospective submission flow; install as `.clinerules/runlog-harvest.md` |
 
 ## Quickstart
 
@@ -53,7 +54,15 @@ Cline adapter of the Runlog client skills. Cline is the second-highest priority 
 
    Then build the verifier (`git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`) and generate a keypair (`runlog-verifier keygen --out ~/.runlog/key`).
 
-5. **Verify** — open Cline's MCP Servers panel; `runlog` should show as connected with three tools.
+5. **(Optional) Install the harvest skill** for end-of-session retrospective submission:
+
+   ```sh
+   cp skills/cline/runlog-harvest.md .clinerules/runlog-harvest.md
+   ```
+
+   Invoke at session end with the literal "harvest this session to runlog" (Cline does not have a `/`-prefixed slash-command surface). Same verifier prerequisites as the write-side skill.
+
+6. **Verify** — open Cline's MCP Servers panel; `runlog` should show as connected with three tools.
 
 ## MCP settings file location
 
@@ -73,6 +82,7 @@ Every Cline adapter MUST honour:
 
 - The four rules in [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md).
 - The author-side rules in [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md) (when running the write skill).
+- The harvest-side rules in [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) (when running the harvest skill).
 
 The contract is framework-agnostic; Cline adapters swap orchestration glue (`execute_command` for the verifier, Plan/Act mode iteration, `.clinerules/` rule loading), not the rules.
 
@@ -80,4 +90,4 @@ The contract is framework-agnostic; Cline adapters swap orchestration glue (`exe
 
 To reduce friction in the write-side verification loop, consider whitelisting `runlog-verifier` in Cline's command auto-approve list — auto-approving the local verifier binary is fine, since it's a deterministic, local, signed action that reads only the draft file and writes nothing outside `~/.runlog/` and `/tmp/`. Auto-approving the `runlog_submit` MCP call is **NOT recommended**: submission is the final review gate, and a prompt-injected context could otherwise publish without your review. Keep `runlog_submit` off Cline's MCP auto-approve list.
 
-User-rules (cross-workspace) typically live in `~/Documents/Cline/Rules/` — drop `runlog.md` and `runlog-author.md` there to apply across all workspaces. The exact path varies by Cline version; check Cline's settings UI.
+User-rules (cross-workspace) typically live in `~/Documents/Cline/Rules/` — drop `runlog.md`, `runlog-author.md`, and `runlog-harvest.md` there to apply across all workspaces. The exact path varies by Cline version; check Cline's settings UI.

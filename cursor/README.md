@@ -10,6 +10,7 @@ Cursor adapter of the Runlog client skills. Cursor is the highest-priority vendo
 |---|---|
 | [`SKILL.md`](./SKILL.md) | Read-side skill body — install as `.cursor/rules/runlog.mdc` (or `~/.cursor/rules/runlog.mdc` globally) |
 | [`runlog-author.md`](./runlog-author.md) | Write-side adapter — install as `.cursor/rules/runlog-author.mdc` |
+| [`runlog-harvest.md`](./runlog-harvest.md) | Harvest skill — end-of-session retrospective submission flow; install as `.cursor/rules/runlog-harvest.mdc` |
 
 ## Quickstart
 
@@ -49,7 +50,15 @@ Cursor adapter of the Runlog client skills. Cursor is the highest-priority vendo
 
    Then build the verifier (`git clone https://github.com/runlog-org/runlog-verifier && cd runlog-verifier && make build && install -m 0755 bin/runlog-verifier ~/.local/bin/`) and generate a keypair (`runlog-verifier keygen --out ~/.runlog/key`).
 
-5. **Verify** — open Settings → Cursor Settings → MCP. `runlog` should show as connected with three tools.
+5. **(Optional) Install the harvest skill** for end-of-session retrospective submission:
+
+   ```sh
+   cp skills/cursor/runlog-harvest.md .cursor/rules/runlog-harvest.mdc
+   ```
+
+   Invoke it with `@runlog harvest` (or just "harvest this session to runlog") at session end. Same verifier prerequisites as the write-side skill.
+
+6. **Verify** — open Settings → Cursor Settings → MCP. `runlog` should show as connected with three tools.
 
 ## Cross-vendor invariants
 
@@ -57,9 +66,10 @@ Every Cursor adapter MUST honour:
 
 - The four rules in [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md).
 - The author-side rules in [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md) (when running the write skill).
+- The harvest-side rules in [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) (when running the harvest skill).
 
 The contract is framework-agnostic; Cursor adapters swap orchestration glue (slash-command invocation, `.mdc` rule format, terminal-tool dispatch), not the rules.
 
 ## Older Cursor versions
 
-For workspaces still on the legacy single-file rules format, append the body of `SKILL.md` (and `runlog-author.md` if using the write side) to a `.cursorrules` file at the workspace root instead of the per-rule `.mdc` files. The newer `.cursor/rules/*.mdc` format is preferred — it supports YAML frontmatter for scoping rules to specific globs.
+For workspaces still on the legacy single-file rules format, append the body of `SKILL.md` (and `runlog-author.md` and `runlog-harvest.md` if using the write or harvest sides) to a `.cursorrules` file at the workspace root instead of the per-rule `.mdc` files. The newer `.cursor/rules/*.mdc` format is preferred — it supports YAML frontmatter for scoping rules to specific globs.

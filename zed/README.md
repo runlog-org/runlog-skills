@@ -10,6 +10,7 @@ Zed adapter of the Runlog client skills. Tracker: `[F25] Multi-vendor MCP skill 
 |---|---|
 | [`SKILL.md`](./SKILL.md) | Read-side skill body — install as `.rules` (workspace) or `~/.config/zed/rules.md` (global) |
 | [`runlog-author.md`](./runlog-author.md) | Write-side adapter |
+| [`runlog-harvest.md`](./runlog-harvest.md) | Harvest skill — end-of-session retrospective submission flow |
 
 ## Quickstart
 
@@ -72,7 +73,9 @@ Zed adapter of the Runlog client skills. Tracker: `[F25] Multi-vendor MCP skill 
 
 4. **(Optional) Install the write-side skill** for verified submissions — append `runlog-author.md` to the rules file. Then build the verifier and generate a keypair (see SKILL.md §Setup).
 
-5. **Verify** — open Zed Assistant. `runlog_search`, `runlog_submit`, `runlog_report` should appear in the available tools.
+5. **(Optional) Install the harvest skill** for end-of-session retrospective submission — append `skills/zed/runlog-harvest.md` to the rules file. Invoke at session end with the literal "harvest this session to runlog" in Zed Assistant. Same verifier prerequisites as the write-side skill.
+
+6. **Verify** — open Zed Assistant. `runlog_search`, `runlog_submit`, `runlog_report` should appear in the available tools.
 
 ## Cross-vendor invariants
 
@@ -80,6 +83,7 @@ Every Zed adapter MUST honour:
 
 - The four rules in [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md).
 - The author-side rules in [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md).
+- The harvest-side rules in [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) (when running the harvest skill).
 
 The contract is framework-agnostic; Zed adapters swap orchestration glue (`context_servers` config, `.rules` file format, Zed Assistant's tool-call surface), not the rules.
 
