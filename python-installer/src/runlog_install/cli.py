@@ -12,7 +12,7 @@ import sys
 
 from runlog_install import registry
 
-_TARGETS = ("claude", "cursor", "zed")
+_TARGETS = ("claude", "copilot", "cursor", "windsurf", "zed")
 _REGISTER_URL = "https://runlog.org/register"
 _VERIFIER_RELEASE_BASE = (
     "https://github.com/runlog-org/runlog-verifier/releases/latest/download"
@@ -31,6 +31,18 @@ def _build_parser() -> argparse.ArgumentParser:
     install_p = subparsers.add_parser(
         "install",
         help="Write the Runlog skill file and register the MCP server with the host.",
+        description=(
+            "Install Runlog into a coding host.\n\n"
+            "Delegated hosts (skill placement only — wire MCP via `npx add-mcp`):\n"
+            "  claude, cursor, zed\n\n"
+            "Fallback hosts (skill placement + direct MCP-config edit):\n"
+            "  windsurf, copilot\n\n"
+            "The four hosts add-mcp covers natively (claude, cursor, cline, zed)\n"
+            "use delegated mode; hosts add-mcp doesn't reach use fallback.\n"
+            "Continue.dev, Aider, and JetBrains AI Assistant are not yet supported\n"
+            "(deferred — their config formats need writers we haven't built)."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     install_p.add_argument(
         "--target",
@@ -50,6 +62,12 @@ def _build_parser() -> argparse.ArgumentParser:
     uninstall_p = subparsers.add_parser(
         "uninstall",
         help="Remove the Runlog skill file and MCP server block from the host.",
+        description=(
+            "Uninstall Runlog from a coding host.\n\n"
+            "Delegated hosts: claude, cursor, zed\n"
+            "Fallback hosts:  windsurf, copilot"
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     uninstall_p.add_argument(
         "--target",

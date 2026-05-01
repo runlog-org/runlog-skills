@@ -10,6 +10,7 @@ from __future__ import annotations
 import pytest
 
 from runlog_install import cli
+from runlog_install.hosts import HOSTS
 
 
 # ---------------------------------------------------------------------------
@@ -69,16 +70,17 @@ def _make_fake_host_class(host_mode: str = "delegated") -> tuple[type, object]:
 
 
 # ---------------------------------------------------------------------------
-# Tests — delegated mode (claude, cursor)
+# Tests — delegated mode (claude, cursor, zed)
 # ---------------------------------------------------------------------------
 
-def test_install_delegated_no_api_key_needed(monkeypatch, capsys):
-    """install --target claude (delegated) succeeds without any API key."""
+@pytest.mark.parametrize("target", ["claude", "cursor", "zed"])
+def test_install_delegated_no_api_key_needed(monkeypatch, capsys, target):
+    """install --target <delegated> succeeds without any API key."""
     fake_cls, fake_host = _make_fake_host_class("delegated")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
     monkeypatch.delenv("RUNLOG_API_KEY", raising=False)
 
-    rc = cli.main(["install", "--target", "claude"])
+    rc = cli.main(["install", "--target", target])
 
     assert rc == 0
     assert fake_host.install_calls == [None]
@@ -86,12 +88,13 @@ def test_install_delegated_no_api_key_needed(monkeypatch, capsys):
     assert "npx add-mcp" in captured.out
 
 
-def test_install_delegated_ignores_api_key_arg(monkeypatch, capsys):
-    """install --target claude --api-key ... (delegated) still passes None to install."""
+@pytest.mark.parametrize("target", ["claude", "cursor", "zed"])
+def test_install_delegated_ignores_api_key_arg(monkeypatch, capsys, target):
+    """install --target <delegated> --api-key ... still passes None to install."""
     fake_cls, fake_host = _make_fake_host_class("delegated")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
-    rc = cli.main(["install", "--target", "claude", "--api-key", "sk-ignored"])
+    rc = cli.main(["install", "--target", target, "--api-key", "sk-ignored"])
 
     assert rc == 0
     # Delegated hosts receive None regardless of --api-key
@@ -100,12 +103,13 @@ def test_install_delegated_ignores_api_key_arg(monkeypatch, capsys):
     assert "npx add-mcp" in captured.out
 
 
-def test_install_delegated_message_contains_npx_add_mcp(monkeypatch, capsys):
+@pytest.mark.parametrize("target", ["claude", "cursor", "zed"])
+def test_install_delegated_message_contains_npx_add_mcp(monkeypatch, capsys, target):
     """Delegated post-install message mentions `npx add-mcp`."""
     fake_cls, fake_host = _make_fake_host_class("delegated")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
-    cli.main(["install", "--target", "cursor"])
+    cli.main(["install", "--target", target])
 
     captured = capsys.readouterr()
     assert "npx add-mcp" in captured.out
@@ -113,33 +117,36 @@ def test_install_delegated_message_contains_npx_add_mcp(monkeypatch, capsys):
 
 
 # ---------------------------------------------------------------------------
-# Tests — fallback mode (future hosts)
+# Tests — fallback mode (windsurf, copilot)
 # ---------------------------------------------------------------------------
 
-def test_install_with_api_key_arg(monkeypatch):
-    """install --target X --api-key sk-test-123 (fallback) → install called with that key."""
+@pytest.mark.parametrize("target", ["windsurf", "copilot"])
+def test_install_with_api_key_arg(monkeypatch, target):
+    """install --target <fallback> --api-key sk-test-123 → install called with that key."""
     fake_cls, fake_host = _make_fake_host_class("fallback")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
-    rc = cli.main(["install", "--target", "claude", "--api-key", "sk-test-123"])
+    rc = cli.main(["install", "--target", target, "--api-key", "sk-test-123"])
 
     assert rc == 0
     assert fake_host.install_calls == ["sk-test-123"]
 
 
-def test_install_uses_env_var(monkeypatch):
-    """install --target X with RUNLOG_API_KEY set (fallback) → install called with env value."""
+@pytest.mark.parametrize("target", ["windsurf", "copilot"])
+def test_install_uses_env_var(monkeypatch, target):
+    """install --target <fallback> with RUNLOG_API_KEY set → install called with env value."""
     fake_cls, fake_host = _make_fake_host_class("fallback")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
     monkeypatch.setenv("RUNLOG_API_KEY", "env-key-abc")
 
-    rc = cli.main(["install", "--target", "cursor"])
+    rc = cli.main(["install", "--target", target])
 
     assert rc == 0
     assert fake_host.install_calls == ["env-key-abc"]
 
 
-def test_install_empty_interactive_input_returns_nonzero(monkeypatch, capsys):
+@pytest.mark.parametrize("target", ["windsurf", "copilot"])
+def test_install_empty_interactive_input_returns_nonzero(monkeypatch, capsys, target):
     """install with no key and no env (fallback), simulated empty input → non-zero + URL printed."""
     fake_cls, fake_host = _make_fake_host_class("fallback")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
@@ -147,7 +154,7 @@ def test_install_empty_interactive_input_returns_nonzero(monkeypatch, capsys):
     # Simulate the user pressing Enter with no input.
     monkeypatch.setattr("getpass.getpass", lambda prompt="": "")
 
-    rc = cli.main(["install", "--target", "claude"])
+    rc = cli.main(["install", "--target", target])
 
     assert rc != 0
     captured = capsys.readouterr()
@@ -155,12 +162,13 @@ def test_install_empty_interactive_input_returns_nonzero(monkeypatch, capsys):
     assert fake_host.install_calls == []
 
 
-def test_install_fallback_message_no_npx(monkeypatch, capsys):
+@pytest.mark.parametrize("target", ["windsurf", "copilot"])
+def test_install_fallback_message_no_npx(monkeypatch, capsys, target):
     """Fallback post-install message does NOT mention npx add-mcp."""
     fake_cls, fake_host = _make_fake_host_class("fallback")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
-    cli.main(["install", "--target", "claude", "--api-key", "sk-abc"])
+    cli.main(["install", "--target", target, "--api-key", "sk-abc"])
 
     captured = capsys.readouterr()
     assert "npx add-mcp" not in captured.out
@@ -189,25 +197,13 @@ def test_install_unknown_target_returns_nonzero(monkeypatch, capsys):
     assert "Available targets" in captured.err
 
 
-def test_uninstall_claude(monkeypatch, capsys):
-    """uninstall --target claude → host.uninstall() called, returns 0."""
+@pytest.mark.parametrize("target", ["claude", "copilot", "cursor", "windsurf", "zed"])
+def test_uninstall_all_targets(monkeypatch, capsys, target):
+    """uninstall --target <any> → host.uninstall() called, returns 0."""
     fake_cls, fake_host = _make_fake_host_class("delegated")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
-    rc = cli.main(["uninstall", "--target", "claude"])
-
-    assert rc == 0
-    assert fake_host.uninstall_calls == 1
-    captured = capsys.readouterr()
-    assert "Uninstalled Runlog from" in captured.out
-
-
-def test_uninstall_cursor(monkeypatch, capsys):
-    """uninstall --target cursor → host.uninstall() called, returns 0."""
-    fake_cls, fake_host = _make_fake_host_class("delegated")
-    monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
-
-    rc = cli.main(["uninstall", "--target", "cursor"])
+    rc = cli.main(["uninstall", "--target", target])
 
     assert rc == 0
     assert fake_host.uninstall_calls == 1
@@ -220,3 +216,45 @@ def test_no_subcommand_exits_nonzero():
     with pytest.raises(SystemExit) as exc_info:
         cli.main([])
     assert exc_info.value.code != 0
+
+
+# ---------------------------------------------------------------------------
+# Tests — help text grouping + registry/CLI sync
+# ---------------------------------------------------------------------------
+
+def test_help_groups_hosts_by_mode():
+    """install --help output groups hosts by mode (Delegated / Fallback)."""
+    parser = cli._build_parser()
+    # Format help for the install subcommand by finding it through subparsers.
+    # We can do this by calling parse_args with --help captured via SystemExit,
+    # but it's simpler to re-invoke _build_parser and pull the subparser directly.
+    import io, contextlib
+
+    buf = io.StringIO()
+    # parse_args(["install", "--help"]) raises SystemExit; capture print_help instead.
+    # Walk the _subparsers to find the install parser.
+    install_parser = None
+    for action in parser._actions:
+        if hasattr(action, "_name_parser_map"):
+            install_parser = action._name_parser_map.get("install")
+            break
+
+    assert install_parser is not None, "install subparser not found"
+    help_text = install_parser.format_help()
+
+    assert "Delegated hosts" in help_text
+    assert "Fallback hosts" in help_text
+    # Delegated group lists the three delegated hosts
+    assert "claude" in help_text
+    assert "cursor" in help_text
+    assert "zed" in help_text
+    # Fallback group lists the two fallback hosts
+    assert "windsurf" in help_text
+    assert "copilot" in help_text
+    # Delegated section appears before Fallback section
+    assert help_text.index("Delegated hosts") < help_text.index("Fallback hosts")
+
+
+def test_targets_complete():
+    """_TARGETS and HOSTS keys must be identical — catches future drift."""
+    assert set(cli._TARGETS) == set(HOSTS.keys())
