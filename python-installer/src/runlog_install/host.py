@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Literal, Protocol
 
 
 class Host(Protocol):
@@ -6,11 +6,17 @@ class Host(Protocol):
 
     name: str        # human-readable, e.g. "Claude Code"
     target_key: str  # CLI --target value, e.g. "claude", "cursor"
+    mode: Literal["delegated", "fallback"]
+    """delegated → SKILL placement only; user runs `npx add-mcp` for the MCP config edit.
+    fallback → SKILL placement + JSONC merge of the MCP block into the host's config file."""
 
-    def install(self, api_key: str) -> None:
-        """Write SKILL file, merge MCP server block into host settings."""
+    def install(self, api_key: str | None = None) -> None:
+        """Write SKILL file and (for fallback mode) merge MCP server block into host settings.
+
+        api_key is only used by fallback hosts; delegated hosts ignore it.
+        """
         ...
 
     def uninstall(self) -> None:
-        """Remove SKILL file, surgically remove MCP server block from host settings."""
+        """Remove SKILL file and (for fallback mode) MCP server block from host settings."""
         ...

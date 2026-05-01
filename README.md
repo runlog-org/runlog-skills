@@ -30,7 +30,7 @@ Asterisks (`*`) flag adapters whose MCP integration is evolving in the upstream 
 
 ## Install
 
-Four install paths, in order of preference for a given vendor:
+Five install paths, in order of preference for a given vendor:
 
 ### 1. Claude Code: plugin marketplace (smoothest for Claude Code)
 
@@ -53,9 +53,9 @@ npx add-mcp https://api.runlog.org/mcp
 
 Pass `-a <agent>` to target one host (`claude-code`, `cursor`, `cline`); pass `-g` for a global config rather than project-scoped. Validated for: Claude Code, Cursor, Cline (both VS Code extension and `cline-cli`).
 
-**Continue, Windsurf, Aider, VS Code Copilot, and JetBrains are not in `add-mcp`'s supported set today** — use path 3 or 4 for those vendors. Zed *is* in `add-mcp`'s supported set but isn't validated for Runlog yet under this slice; treat it as path 3/4 until M01-S02 covers the wider host fan-out.
+**Continue, Windsurf, Aider, VS Code Copilot, and JetBrains are not in `add-mcp`'s supported set today** — use path 3, 4, or 5 for those vendors. Zed is in `add-mcp`'s supported set; the python-installer (path 4) also covers it as a delegated target.
 
-`add-mcp` only writes the MCP server config; the per-vendor `SKILL.md` body still needs to land in the host's rules path. Either copy it manually (path 4) or run `npx @runlog/install <vendor> --write` (path 3) for the skill side. The Claude Code plugin (path 1) does both in one step.
+`add-mcp` only writes the MCP server config; the per-vendor `SKILL.md` body still needs to land in the host's rules path. Either copy it manually (path 5) or use the python-installer (path 4) or run `npx @runlog/install <vendor> --write` (path 3) for the skill side. The Claude Code plugin (path 1) does both in one step.
 
 ### 3. Any vendor: `npx @runlog/install <vendor>`
 
@@ -69,9 +69,27 @@ npx @runlog/install cursor --write
 
 Vendors: `claude-code`, `cursor`, `cline`, `continue`, `windsurf`, `aider`, `copilot`, `jetbrains`, `zed`. The installer fetches the canonical `SKILL.md` from this repo's `main` and writes it to the right vendor-specific path (or prints it for vendors that share a single rules file with the user's other content). It does **not** auto-edit your MCP config — it prints the snippet for you to merge in. See [`installer/README.md`](./installer/README.md) for full flag reference.
 
-### 4. Manual: clone + copy
+### 4. Python installer: `runlog install --target <host>` (no npm required)
 
-The original install model still works — each per-vendor folder's README has a `Quickstart` section that walks through `cp <vendor>/SKILL.md <target-path>` plus the MCP config to add. Use this if you want to read the rule before installing it, or your environment doesn't have npm.
+A stdlib-only Python installer (`pipx install runlog-installer`) covers five hosts across two modes. Use this when npm is not available or you want a single command that handles both SKILL placement and MCP-config editing for hosts `add-mcp` does not reach.
+
+| Target | Host | Mode | What gets installed |
+|---|---|---|---|
+| `claude` | Claude Code | delegated | SKILL only — wire MCP via `npx add-mcp` |
+| `cursor` | Cursor | delegated | SKILL only — wire MCP via `npx add-mcp` |
+| `zed` | Zed | delegated | SKILL only — wire MCP via `npx add-mcp` |
+| `windsurf` | Windsurf | fallback | SKILL + MCP-config edit (no npm needed) |
+| `copilot` | GitHub Copilot (VS Code) | fallback | SKILL + MCP-config edit (no npm needed) |
+
+Delegated hosts use `add-mcp` for the MCP wiring step; the installer places the SKILL and prints the reminder. Fallback hosts get both the SKILL and the MCP block written directly — an API key is required (`--api-key` flag, `RUNLOG_API_KEY` env, or interactive prompt).
+
+The python-installer also provides `runlog register --email <addr>` to orchestrate the verifier registration flow. See [`python-installer/README.md`](./python-installer/README.md) for the full reference.
+
+**Not yet automated (Continue, Aider, JetBrains):** These three hosts' config formats are incompatible with the installer's JSONC helper — Continue uses YAML, Aider uses YAML with an array-shape server list, and JetBrains AI Assistant's config path and format are not confirmed. Use path 5 (manual) for these hosts until a follow-up slice ships support.
+
+### 5. Manual: clone + copy
+
+The original install model still works — each per-vendor folder's README has a `Quickstart` section that walks through `cp <vendor>/SKILL.md <target-path>` plus the MCP config to add. Use this if you want to read the rule before installing it, or your environment has neither npm nor Python.
 
 ## Cross-vendor expansion strategy — `[F25]`
 
