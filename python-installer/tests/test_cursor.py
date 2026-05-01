@@ -95,3 +95,42 @@ def test_mode_is_delegated(make_host, tmp_path):
         skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
     )
     assert host.mode == "delegated"
+
+
+# ---------------------------------------------------------------------------
+# 7. install writes all three .mdc files (read, author, harvest)
+# ---------------------------------------------------------------------------
+
+def test_install_writes_all_three_skills(make_host, tmp_path):
+    host = make_host(
+        CursorHost,
+        skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
+    )
+    host.install()
+
+    rules_dir = tmp_path / ".cursor" / "rules"
+    assert (rules_dir / "runlog.mdc").is_file()
+    assert (rules_dir / "runlog-author.mdc").is_file()
+    assert (rules_dir / "runlog-harvest.mdc").is_file()
+
+
+# ---------------------------------------------------------------------------
+# 8. uninstall removes all three .mdc files
+# ---------------------------------------------------------------------------
+
+def test_uninstall_removes_all_three_skills(make_host, tmp_path):
+    host = make_host(
+        CursorHost,
+        skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
+    )
+    host.install()
+
+    rules_dir = tmp_path / ".cursor" / "rules"
+    assert (rules_dir / "runlog-author.mdc").is_file()
+    assert (rules_dir / "runlog-harvest.mdc").is_file()
+
+    host.uninstall()
+
+    assert not (rules_dir / "runlog.mdc").exists()
+    assert not (rules_dir / "runlog-author.mdc").exists()
+    assert not (rules_dir / "runlog-harvest.mdc").exists()

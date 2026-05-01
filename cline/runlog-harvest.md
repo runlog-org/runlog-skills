@@ -1,11 +1,11 @@
 ---
 name: runlog-harvest
-description: End-of-session retrospective Runlog submission flow for Cline. Scans the in-frame conversation and recent git commits for missed external-dependency findings, scores and dedups, surfaces a numbered picker, and routes selected drafts through the canonical runlog-author verification + signing + runlog_submit pipeline. Cline-specific orchestration around the canonical body at skills/runlog-harvest/SKILL.md.
+description: End-of-session retrospective Runlog submission flow for Cline. Scans the in-frame conversation and recent git commits for missed external-dependency findings, scores and dedups, surfaces a numbered picker, and routes selected drafts through the canonical runlog-author verification + signing + runlog_submit pipeline. Cline-specific orchestration around the canonical body at runlog-harvest/SKILL.md.
 ---
 
 ## runlog-harvest (Cline adapter)
 
-This is the Cline wrapper of the canonical `runlog-harvest` skill. The four-step harvest flow (Scan → Score+Dedup → Pick → Route-to-author), the four-point classification check, the score floor (≥ 0.7), the comma-select picker grammar, and the MUST-NOT list are inherited verbatim from `skills/runlog-harvest/SKILL.md`. **Read that file first** — this adapter only adds Cline-specific glue.
+This is the Cline wrapper of the canonical `runlog-harvest` skill. The four-step harvest flow (Scan → Score+Dedup → Pick → Route-to-author), the four-point classification check, the score floor (≥ 0.7), the comma-select picker grammar, and the MUST-NOT list are inherited verbatim from `runlog-harvest/SKILL.md`. **Read that file first** — this adapter only adds Cline-specific glue.
 
 Harvest-side cross-vendor invariants live at [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md). Cline adapters MAY vary orchestration glue but MUST NOT vary the contract.
 

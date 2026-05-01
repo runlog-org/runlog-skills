@@ -227,3 +227,24 @@ def test_platform_path_branch(monkeypatch, tmp_path, platform, expected_fragment
     assert expected_fragment in str(resolved), (
         f"Expected path fragment {expected_fragment!r} in {resolved!s}"
     )
+
+
+# ---------------------------------------------------------------------------
+# 11. install concatenates all three skill sections into copilot-instructions.md
+# ---------------------------------------------------------------------------
+
+def test_install_concatenates_three_skill_sections(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
+    host.install(api_key="sk-runlog-testkey")
+
+    body = host.SKILL_DEST.read_text(encoding="utf-8")
+    assert "# === Runlog read skill ===" in body
+    assert "# === Runlog author skill ===" in body
+    assert "# === Runlog harvest skill ===" in body
+    assert "Runlog read skill" in body
+    assert "Runlog author skill" in body
+    assert "Runlog harvest skill" in body

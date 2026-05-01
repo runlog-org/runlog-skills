@@ -73,7 +73,7 @@ If `$RUNLOG_API_KEY` is unset, instruct the user to set it in the shell that lau
 **Explicit invocation** — the user types one of:
 
 - `@runlog publish` in Cursor's chat
-- `/runlog-publish` via command palette
+- `/runlog:publish` via command palette
 - "publish that to runlog" in plain language
 
 Both heuristic and explicit invocations route into the same four-step flow.

@@ -1,7 +1,7 @@
 {
   "name": "@runlog/install",
   "version": "0.1.0",
-  "description": "Install the Runlog client skill for your agent framework (Claude Code, Cursor, Cline, Continue, Windsurf, Aider, Copilot, JetBrains, Zed).",
+  "description": "Install the Runlog client skills (read, author, harvest) for your agent framework (Claude Code, Cursor, Cline, Continue, Windsurf, Aider, Copilot, JetBrains, Zed).",
   "bin": {
     "runlog-install": "./index.js"
   },
@@ -14,6 +14,7 @@
     "runlog",
     "mcp",
     "skill",
+    "harvest",
     "agent",
     "claude-code",
     "cursor",

@@ -101,3 +101,42 @@ def test_mode_is_delegated(make_host, tmp_path):
         skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
     )
     assert host.mode == "delegated"
+
+
+# ---------------------------------------------------------------------------
+# Test 7: install writes all three skills (read, author, harvest)
+# ---------------------------------------------------------------------------
+
+def test_install_writes_all_three_skills(make_host, tmp_path):
+    host = make_host(
+        ClaudeCodeHost,
+        skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
+    )
+    host.install()
+
+    skills_root = tmp_path / ".claude" / "skills"
+    assert (skills_root / "runlog" / "SKILL.md").is_file()
+    assert (skills_root / "runlog-author" / "SKILL.md").is_file()
+    assert (skills_root / "runlog-harvest" / "SKILL.md").is_file()
+
+
+# ---------------------------------------------------------------------------
+# Test 8: uninstall removes all three skill directories
+# ---------------------------------------------------------------------------
+
+def test_uninstall_removes_all_three_skills(make_host, tmp_path):
+    host = make_host(
+        ClaudeCodeHost,
+        skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
+    )
+    host.install()
+
+    skills_root = tmp_path / ".claude" / "skills"
+    assert (skills_root / "runlog-author" / "SKILL.md").is_file()
+    assert (skills_root / "runlog-harvest" / "SKILL.md").is_file()
+
+    host.uninstall()
+
+    assert not (skills_root / "runlog" / "SKILL.md").exists()
+    assert not (skills_root / "runlog-author" / "SKILL.md").exists()
+    assert not (skills_root / "runlog-harvest" / "SKILL.md").exists()

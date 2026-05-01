@@ -1,13 +1,21 @@
 """cursor.py — Host adapter for Cursor.
 
-Delegated mode: copies the runlog.mdc rule file to ~/.cursor/rules/.
-MCP server wiring is handled separately by the user via `npx add-mcp`.
+Delegated mode: copies the runlog read / author / harvest rule files to
+``~/.cursor/rules/``. MCP server wiring is handled separately by the user
+via ``npx add-mcp``.
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Literal
+
+from runlog_install import skill_writer
+
+# Source SKILL files: <repo>/cursor/{SKILL,runlog-author,runlog-harvest}.md
+# parents[0] = hosts/  parents[1] = runlog_install/  parents[2] = src/
+# parents[3] = python-installer/  parents[4] = runlog-skills/ (repo root)
+_VENDOR_DIR = Path(__file__).resolve().parents[4] / "cursor"
 
 
 class CursorHost:
@@ -17,32 +25,29 @@ class CursorHost:
     target_key: str = "cursor"
     mode: Literal["delegated", "fallback"] = "delegated"
 
+    # Read-skill destination + source — kept as named class attrs for
+    # back-compat with the make_host fixture monkeypatching.
     SKILL_DEST: Path = Path.home() / ".cursor" / "rules" / "runlog.mdc"
+    _SKILL_SRC: Path = _VENDOR_DIR / "SKILL.md"
 
-    # Source SKILL.md relative to this file: <repo>/cursor/SKILL.md
-    # parents[0] = hosts/  parents[1] = runlog_install/  parents[2] = src/
-    # parents[3] = python-installer/  parents[4] = runlog-skills/ (repo root)
-    _SKILL_SRC: Path = Path(__file__).resolve().parents[4] / "cursor" / "SKILL.md"
+    @property
+    def skill_sources(self) -> list[tuple[Path, Path, str]]:
+        """Three (source, dest, label) specs — read / author / harvest .mdc files."""
+        rules_dir = self.SKILL_DEST.parent  # .../rules/
+        src_root = self._SKILL_SRC.parent
+        return [
+            (self._SKILL_SRC, self.SKILL_DEST, "read"),
+            (src_root / "runlog-author.md", rules_dir / "runlog-author.mdc", "author"),
+            (src_root / "runlog-harvest.md", rules_dir / "runlog-harvest.mdc", "harvest"),
+        ]
 
     def install(self, api_key: str | None = None) -> None:
-        """Write runlog.mdc to its destination (mkdir -p parent)."""
-        # 1. Copy SKILL.md to SKILL_DEST (mkdir -p parent)
-        skill_src = self._SKILL_SRC
-        if not skill_src.is_file():
-            raise FileNotFoundError(
-                f"Source skill file not found: cursor/SKILL.md (expected at {skill_src})"
-            )
-        self.SKILL_DEST.parent.mkdir(parents=True, exist_ok=True)
-        self.SKILL_DEST.write_text(skill_src.read_text(encoding="utf-8"), encoding="utf-8")
+        """Write the read / author / harvest .mdc files (mkdir -p parent)."""
+        skill_writer.write_skills(self.skill_sources, self.name)
 
     def post_install_hint(self) -> str | None:
         return None
 
     def uninstall(self) -> None:
-        """Remove runlog.mdc and clean up empty parent directory."""
-        # 1. Remove SKILL_DEST; rmdir empty parent dirs
-        self.SKILL_DEST.unlink(missing_ok=True)
-        try:
-            self.SKILL_DEST.parent.rmdir()
-        except OSError:
-            pass  # directory not empty or doesn't exist — leave it alone
+        """Remove the three .mdc rule files and the (now-empty) parent directory."""
+        skill_writer.remove_skills(self.skill_sources)

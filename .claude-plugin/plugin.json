@@ -1,6 +1,6 @@
 {
   "name": "runlog",
-  "description": "Runlog client skill — calls runlog_search / runlog_submit / runlog_report against api.runlog.org. Bundles the runlog-author write-side skill and auto-registers the Runlog HTTP MCP server.",
+  "description": "Runlog client skill — calls runlog_search / runlog_submit / runlog_report against api.runlog.org. Bundles the runlog-author write-side skill and the runlog-harvest end-of-session retrospective skill, and auto-registers the Runlog HTTP MCP server.",
   "version": "0.1.0",
   "author": {
     "name": "Runlog",

@@ -1,13 +1,13 @@
 ---
 name: runlog-author-contract
-description: Cross-vendor invariants every Runlog author skill MUST preserve. Per-vendor adapters under skills/<vendor>/runlog-author/ may vary orchestration glue but MUST honour every rule in this document.
+description: Cross-vendor invariants every Runlog author skill MUST preserve. Per-vendor adapters under <vendor>/runlog-author.md may vary orchestration glue but MUST honour every rule in this document.
 ---
 
 # runlog-author Contract
 
 Author skills are a strict superset of read skills. Every rule in [`four-point-client-contract.md`](./four-point-client-contract.md) applies to author skills too; this document adds the rules specific to the submission flow.
 
-The canonical author body lives at [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md). Per-vendor adapters — under `skills/cursor/runlog-author/`, `skills/cline/runlog-author/`, etc. — MAY vary:
+The canonical author body lives at [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md). Per-vendor adapters — at `cursor/runlog-author.md`, `cline/runlog-author.md`, etc. — MAY vary:
 
 - How the skill is invoked (slash command, hotkey, automatic heuristic)
 - How local Bash is dispatched (vendor's tool-use API)

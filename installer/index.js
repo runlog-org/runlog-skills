@@ -7,52 +7,123 @@ const os = require('os');
 
 const RAW_BASE = 'https://raw.githubusercontent.com/runlog-org/runlog-skills/main';
 
+// Each vendor ships three skills: the read SKILL, the runlog-author write
+// skill, and the runlog-harvest skill. For non-shared vendors each lands at
+// its own target path. For shared vendors (single rules file) all three
+// bodies are concatenated with section headers and printed for the user to
+// merge.
+const SKILL_LABELS = {
+  read: 'Read skill (runlog)',
+  author: 'Author skill (runlog-author)',
+  harvest: 'Harvest skill (runlog-harvest)',
+};
+
 const VENDORS = {
   'claude-code': {
-    source: 'claude-code/SKILL.md',
-    target: '.claude/skills/runlog/SKILL.md',
-    globalTarget: '~/.claude/skills/runlog/SKILL.md',
+    sources: [
+      {
+        kind: 'read',
+        source: 'claude-code/SKILL.md',
+        target: '.claude/skills/runlog/SKILL.md',
+        globalTarget: '~/.claude/skills/runlog/SKILL.md',
+      },
+      {
+        kind: 'author',
+        source: 'claude-code/runlog-author.md',
+        target: '.claude/skills/runlog-author/SKILL.md',
+        globalTarget: '~/.claude/skills/runlog-author/SKILL.md',
+      },
+      {
+        kind: 'harvest',
+        source: 'claude-code/runlog-harvest.md',
+        target: '.claude/skills/runlog-harvest/SKILL.md',
+        globalTarget: '~/.claude/skills/runlog-harvest/SKILL.md',
+      },
+    ],
     note: 'For Claude Code, prefer the plugin marketplace:\n  /plugin marketplace add runlog-org/runlog-skills\n  /plugin install runlog\nThe plugin also auto-registers the Runlog MCP server.',
   },
   cursor: {
-    source: 'cursor/SKILL.md',
-    target: '.cursor/rules/runlog.mdc',
-    globalTarget: '~/.cursor/rules/runlog.mdc',
+    sources: [
+      {
+        kind: 'read',
+        source: 'cursor/SKILL.md',
+        target: '.cursor/rules/runlog.mdc',
+        globalTarget: '~/.cursor/rules/runlog.mdc',
+      },
+      {
+        kind: 'author',
+        source: 'cursor/runlog-author.md',
+        target: '.cursor/rules/runlog-author.mdc',
+        globalTarget: '~/.cursor/rules/runlog-author.mdc',
+      },
+      {
+        kind: 'harvest',
+        source: 'cursor/runlog-harvest.md',
+        target: '.cursor/rules/runlog-harvest.mdc',
+        globalTarget: '~/.cursor/rules/runlog-harvest.mdc',
+      },
+    ],
   },
   cline: {
-    source: 'cline/SKILL.md',
-    target: '.clinerules/runlog.md',
+    sources: [
+      { kind: 'read', source: 'cline/SKILL.md', target: '.clinerules/runlog.md' },
+      { kind: 'author', source: 'cline/runlog-author.md', target: '.clinerules/runlog-author.md' },
+      { kind: 'harvest', source: 'cline/runlog-harvest.md', target: '.clinerules/runlog-harvest.md' },
+    ],
   },
   continue: {
-    source: 'continue/SKILL.md',
-    target: '.continue/rules/runlog.md',
+    sources: [
+      { kind: 'read', source: 'continue/SKILL.md', target: '.continue/rules/runlog.md' },
+      { kind: 'author', source: 'continue/runlog-author.md', target: '.continue/rules/runlog-author.md' },
+      { kind: 'harvest', source: 'continue/runlog-harvest.md', target: '.continue/rules/runlog-harvest.md' },
+    ],
   },
   windsurf: {
-    source: 'windsurf/SKILL.md',
+    sources: [
+      { kind: 'read', source: 'windsurf/SKILL.md' },
+      { kind: 'author', source: 'windsurf/runlog-author.md' },
+      { kind: 'harvest', source: 'windsurf/runlog-harvest.md' },
+    ],
     target: '.windsurfrules',
     shared: true,
     note: 'Windsurf shares one .windsurfrules file across all your project rules. Merge the printed content with your existing file rather than overwriting it.',
   },
   aider: {
-    source: 'aider/SKILL.md',
+    sources: [
+      { kind: 'read', source: 'aider/SKILL.md' },
+      { kind: 'author', source: 'aider/runlog-author.md' },
+      { kind: 'harvest', source: 'aider/runlog-harvest.md' },
+    ],
     target: 'CONVENTIONS.md',
     shared: true,
     note: 'Aider shares CONVENTIONS.md or accepts files via --read. Merge the printed content with your existing CONVENTIONS.md, or save it as a separate file and pass via --read.',
   },
   copilot: {
-    source: 'copilot/SKILL.md',
+    sources: [
+      { kind: 'read', source: 'copilot/SKILL.md' },
+      { kind: 'author', source: 'copilot/runlog-author.md' },
+      { kind: 'harvest', source: 'copilot/runlog-harvest.md' },
+    ],
     target: '.github/copilot-instructions.md',
     shared: true,
     note: 'Copilot uses a single .github/copilot-instructions.md. Append the printed content to your existing file.',
   },
   jetbrains: {
-    source: 'jetbrains/SKILL.md',
+    sources: [
+      { kind: 'read', source: 'jetbrains/SKILL.md' },
+      { kind: 'author', source: 'jetbrains/runlog-author.md' },
+      { kind: 'harvest', source: 'jetbrains/runlog-harvest.md' },
+    ],
     target: null,
     shared: true,
     note: 'JetBrains AI Assistant configuration lives in IDE Settings → AI Assistant. Paste the printed content into your AI Assistant guidelines.',
   },
   zed: {
-    source: 'zed/SKILL.md',
+    sources: [
+      { kind: 'read', source: 'zed/SKILL.md' },
+      { kind: 'author', source: 'zed/runlog-author.md' },
+      { kind: 'harvest', source: 'zed/runlog-harvest.md' },
+    ],
     target: '.rules',
     shared: true,
     note: 'Zed uses a single .rules file. Append the printed content to your existing file.',
@@ -77,17 +148,17 @@ function printHelp() {
 Vendors:
   claude-code, cursor, cline, continue, windsurf, aider, copilot, jetbrains, zed
 
-Default: prints the SKILL.md content and the MCP server config snippet for
-manual install. Safe for vendors that share a single rules file with your
-existing content (windsurf, copilot, zed, aider, jetbrains).
+Default: prints all three Runlog skill bodies (read, runlog-author, runlog-harvest)
+and the MCP server config snippet for manual install. Safe for vendors that share
+a single rules file with your existing content (windsurf, copilot, zed, aider, jetbrains).
 
 Flags:
-  --write    Write the SKILL.md to the vendor's rules path (only for vendors
-             with a dedicated rules directory: cursor, cline, continue,
-             claude-code).
-  --global   Use the user-global path (cursor, claude-code) instead of the
-             project-local path.
-  --force    Overwrite existing target file when used with --write.
+  --write    Write all three skill files (read, runlog-author, runlog-harvest) to
+             the vendor's rules paths (only for vendors with a dedicated rules
+             directory: cursor, cline, continue, claude-code).
+  --global   Use the user-global paths (cursor, claude-code) instead of the
+             project-local paths.
+  --force    Overwrite existing target files when used with --write.
 
 For Claude Code, prefer the plugin marketplace:
   /plugin marketplace add runlog-org/runlog-skills
@@ -112,13 +183,30 @@ function expandHome(p) {
   return p;
 }
 
-function printSkillBlock(vendor, target, content, note) {
-  process.stdout.write(`\n# Runlog skill — ${vendor}\n\n`);
+function buildSharedBody(bodies) {
+  // bodies: [{kind, content}, ...] in read/author/harvest order
+  const parts = [];
+  for (const { kind, content } of bodies) {
+    const label = SKILL_LABELS[kind] || kind;
+    parts.push(`---\n## ${label}\n---\n${content}`);
+  }
+  return parts.join('\n\n');
+}
+
+function printSharedBlock(vendor, target, combinedBody, note) {
+  process.stdout.write(`\n# Runlog skills — ${vendor}\n\n`);
   if (target) process.stdout.write(`Target path: ${target}\n\n`);
   if (note) process.stdout.write(`${note}\n\n`);
-  process.stdout.write(`--- BEGIN SKILL.md ---\n${content}\n--- END SKILL.md ---\n\n`);
+  process.stdout.write(`--- BEGIN runlog skills (3 sections: read, author, harvest) ---\n${combinedBody}\n--- END runlog skills ---\n\n`);
   process.stdout.write(`--- MCP server config (add to your vendor's MCP config) ---\n${MCP_SNIPPET}\n\n`);
   process.stdout.write(`Set RUNLOG_API_KEY (get one at https://runlog.org/register).\n`);
+}
+
+function printPerSourceBlock(vendor, sourceEntry, target, content) {
+  const label = SKILL_LABELS[sourceEntry.kind] || sourceEntry.kind;
+  process.stdout.write(`\n# Runlog ${label} — ${vendor}\n\n`);
+  if (target) process.stdout.write(`Target path: ${target}\n\n`);
+  process.stdout.write(`--- BEGIN ${sourceEntry.source} ---\n${content}\n--- END ${sourceEntry.source} ---\n\n`);
 }
 
 async function main() {
@@ -141,37 +229,67 @@ async function main() {
     process.exit(1);
   }
 
-  let content;
+  // Fetch all three skill bodies up front.
+  let bodies;
   try {
-    content = await fetchSource(config.source);
+    bodies = await Promise.all(
+      config.sources.map(async (s) => ({
+        kind: s.kind,
+        entry: s,
+        content: await fetchSource(s.source),
+      })),
+    );
   } catch (err) {
     process.stderr.write(`${err.message}\n`);
     process.exit(1);
   }
 
-  const target = expandHome(useGlobal ? config.globalTarget : config.target);
-
-  if (config.shared || !target) {
-    printSkillBlock(vendor, target, content, config.note);
+  // Shared-file vendors: concatenate + print regardless of --write.
+  if (config.shared) {
+    const combined = buildSharedBody(bodies.map(({ kind, content }) => ({ kind, content })));
+    printSharedBlock(vendor, config.target, combined, config.note);
     return;
   }
 
+  // Non-shared vendors. Resolve per-source targets up front.
+  const resolved = bodies.map(({ kind, entry, content }) => ({
+    kind,
+    entry,
+    content,
+    target: expandHome(useGlobal ? entry.globalTarget : entry.target),
+  }));
+
+  // Print mode (default): emit all three section blocks + MCP snippet once.
   if (!useWrite) {
-    printSkillBlock(vendor, target, content, config.note);
-    process.stdout.write(`Re-run with --write to write the file to ${target} instead of printing.\n`);
+    for (const r of resolved) {
+      printPerSourceBlock(vendor, r.entry, r.target, r.content);
+    }
+    if (config.note) process.stdout.write(`${config.note}\n\n`);
+    process.stdout.write(`--- MCP server config (add to your vendor's MCP config) ---\n${MCP_SNIPPET}\n\n`);
+    process.stdout.write(`Set RUNLOG_API_KEY (get one at https://runlog.org/register).\n`);
+    process.stdout.write(`\nRe-run with --write to write the files to disk instead of printing.\n`);
     return;
   }
 
-  if (fs.existsSync(target) && !useForce) {
-    process.stderr.write(`Target already exists: ${target}\n`);
-    process.stderr.write('Re-run with --force to overwrite, or drop --write to print the content instead.\n');
-    process.exit(1);
+  // --write mode: refuse if any target exists without --force.
+  if (!useForce) {
+    const existing = resolved.filter((r) => r.target && fs.existsSync(r.target));
+    if (existing.length > 0) {
+      for (const r of existing) {
+        process.stderr.write(`Target already exists: ${r.target}\n`);
+      }
+      process.stderr.write('Re-run with --force to overwrite, or drop --write to print the content instead.\n');
+      process.exit(1);
+    }
   }
 
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, content);
-  process.stdout.write(`Wrote ${target}\n\n`);
-  process.stdout.write(`Now register the Runlog MCP server. Add this to your vendor's MCP config:\n\n${MCP_SNIPPET}\n\n`);
+  for (const r of resolved) {
+    if (!r.target) continue;
+    fs.mkdirSync(path.dirname(r.target), { recursive: true });
+    fs.writeFileSync(r.target, r.content);
+    process.stdout.write(`Wrote ${r.target}\n`);
+  }
+  process.stdout.write(`\nNow register the Runlog MCP server. Add this to your vendor's MCP config:\n\n${MCP_SNIPPET}\n\n`);
   process.stdout.write(`Then set RUNLOG_API_KEY (get one at https://runlog.org/register).\n`);
   if (config.note) process.stdout.write(`\n${config.note}\n`);
 }

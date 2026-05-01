@@ -137,3 +137,25 @@ def test_mode_attribute(make_host, tmp_path):
         skill_dest=tmp_path / ".config" / "zed" / "rules.md",
     )
     assert host.mode == "delegated"
+
+
+# ---------------------------------------------------------------------------
+# Test 9: install concatenates all three skill bodies into rules.md
+# ---------------------------------------------------------------------------
+
+def test_install_concatenates_three_skill_sections(make_host, tmp_path):
+    host = make_host(
+        ZedHost,
+        skill_dest=tmp_path / ".config" / "zed" / "rules.md",
+    )
+    host.install()
+
+    body = host.SKILL_DEST.read_text(encoding="utf-8")
+    # All three section headers must be present.
+    assert "# === Runlog read skill ===" in body
+    assert "# === Runlog author skill ===" in body
+    assert "# === Runlog harvest skill ===" in body
+    # And the stub bodies for each skill (from the conftest fixture).
+    assert "Runlog read skill" in body
+    assert "Runlog author skill" in body
+    assert "Runlog harvest skill" in body

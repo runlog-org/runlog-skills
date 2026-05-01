@@ -1,11 +1,11 @@
 ---
 name: runlog-harvest
-description: End-of-session retrospective Runlog submission flow for Zed Assistant. Scans the in-frame conversation and recent git commits for missed external-dependency findings, scores and dedups, surfaces a numbered picker, and routes selected drafts through the canonical runlog-author verification + signing + runlog_submit pipeline. Zed-specific orchestration around the canonical body at skills/runlog-harvest/SKILL.md.
+description: End-of-session retrospective Runlog submission flow for Zed Assistant. Scans the in-frame conversation and recent git commits for missed external-dependency findings, scores and dedups, surfaces a numbered picker, and routes selected drafts through the canonical runlog-author verification + signing + runlog_submit pipeline. Zed-specific orchestration around the canonical body at runlog-harvest/SKILL.md.
 ---
 
 ## runlog-harvest (Zed adapter)
 
-This is the Zed wrapper of the canonical `runlog-harvest` skill. The four-step harvest flow (Scan → Score+Dedup → Pick → Route-to-author), the four-point classification check, the score floor (≥ 0.7), the comma-select picker grammar, and the MUST-NOT list are inherited verbatim from `skills/runlog-harvest/SKILL.md`. **Read that file first** — this adapter only adds Zed-specific glue.
+This is the Zed wrapper of the canonical `runlog-harvest` skill. The four-step harvest flow (Scan → Score+Dedup → Pick → Route-to-author), the four-point classification check, the score floor (≥ 0.7), the comma-select picker grammar, and the MUST-NOT list are inherited verbatim from `runlog-harvest/SKILL.md`. **Read that file first** — this adapter only adds Zed-specific glue.
 
 Harvest-side cross-vendor invariants live at [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md). Zed adapters MAY vary orchestration glue but MUST NOT vary the contract.
 
@@ -16,9 +16,9 @@ Harvest-side cross-vendor invariants live at [`../common/runlog-harvest-contract
 | **Invocation** | "User invokes harvest explicitly" | Plain-language request in the Zed agent panel ("harvest this session to runlog", "scan for runlog candidates"), or `@runlog harvest` if the user has configured Zed's mention surface for the runlog scope. Zed's slash-command surface evolves across releases; explicit verbal invocation is the stable form. |
 | **Local Bash dispatch** | "Run `git log` and the verifier via Bash" | Zed agent's terminal tool. Required for Step 4's verifier loop. Each invocation requires user approval unless allow-listed. If terminal access is denied the skill MUST refuse to submit. |
 | **Agent-loop iteration** | "Sequential per-candidate route to runlog-author" | Each picked candidate is its own complete pass through runlog-author Step 2 → 3 → 4. The 5-round verifier retry cap (inherited from runlog-author) applies per-candidate. |
-| **Session-context discovery** | "In-frame fallback; per-host transcript optional" | Zed does not expose a stable on-disk transcript path the adapter can rely on. Falls back to in-frame conversation context — the normative fallback per the cross-vendor contract — and uses the agent's terminal tool for the recent-commits scan (`git log --oneline -10`). |
+| **Session-transcript discovery** | "In-frame fallback; per-host transcript optional" | Zed does not expose a stable on-disk transcript path the adapter can rely on. Falls back to in-frame conversation context — the normative fallback per the cross-vendor contract — and uses the agent's terminal tool for the recent-commits scan (`git log --oneline -10`). |
 | **Picker rendering** | "Numbered list, comma-select grammar" | The Zed agent panel renders the numbered list inline. The user replies in chat following the comma-select grammar from the canonical body (`<n>(',' <n>)* | 'skip' <n> | 'all' | 'none'`). Per-item edit-before-submit is offered as a follow-up agent turn before the verifier dispatches. |
-| **Draft persistence** | "Hold the draft in memory" | Zed Assistant can edit files directly; write per-candidate drafts to `.runlog-harvest/<unit_id>.yaml` in the workspace (gitignored). Distinct from runlog-author's `.runlog-author/` so the two skills do not clobber each other's scratch state. The user can inspect the draft in a Zed buffer before approving the verifier call. Cleaned up on successful submit. |
+| **Draft persistence** | "Vendor scratch dir" | Zed Assistant can edit files directly; write per-candidate drafts to `.runlog-harvest/<unit_id>.yaml` in the workspace (gitignored). Distinct from runlog-author's `.runlog-author/` so the two skills do not clobber each other's scratch state. The user can inspect the draft in a Zed buffer before approving the verifier call. Cleaned up on successful submit. |
 
 ```text
 # add to your project's .gitignore:
@@ -81,6 +81,7 @@ Adapter shipped 2026-05-01 alongside the canonical harvest body (M01-S03 wave 2)
 ## Further Reading
 
 - [`../runlog-harvest/SKILL.md`](../runlog-harvest/SKILL.md) — canonical harvest body (READ FIRST)
+- [`../runlog-harvest/DESIGN.md`](../runlog-harvest/DESIGN.md) — design rationale and open questions
 - [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) — harvest-side cross-vendor invariants
 - [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md) — Step 4 hand-off target
 - [`./runlog-author.md`](./runlog-author.md) — Zed author adapter

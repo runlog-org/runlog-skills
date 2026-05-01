@@ -1,11 +1,11 @@
 ---
 name: runlog-harvest
-description: End-of-session retrospective Runlog submission flow for VS Code Copilot. Scans the in-frame conversation and recent git commits for missed external-dependency findings, scores and dedups, surfaces a numbered picker, and routes selected drafts through the canonical runlog-author verification + signing + runlog_submit pipeline. Copilot-specific orchestration around the canonical body at skills/runlog-harvest/SKILL.md.
+description: End-of-session retrospective Runlog submission flow for VS Code Copilot. Scans the in-frame conversation and recent git commits for missed external-dependency findings, scores and dedups, surfaces a numbered picker, and routes selected drafts through the canonical runlog-author verification + signing + runlog_submit pipeline. Copilot-specific orchestration around the canonical body at runlog-harvest/SKILL.md.
 ---
 
 ## runlog-harvest (VS Code Copilot adapter)
 
-This is the Copilot wrapper of the canonical `runlog-harvest` skill. The four-step harvest flow (Scan → Score+Dedup → Pick → Route-to-author), the four-point classification check, the score floor (≥ 0.7), the comma-select picker grammar, and the MUST-NOT list are inherited verbatim from `skills/runlog-harvest/SKILL.md`. **Read that file first** — this adapter only adds Copilot-specific glue.
+This is the Copilot wrapper of the canonical `runlog-harvest` skill. The four-step harvest flow (Scan → Score+Dedup → Pick → Route-to-author), the four-point classification check, the score floor (≥ 0.7), the comma-select picker grammar, and the MUST-NOT list are inherited verbatim from `runlog-harvest/SKILL.md`. **Read that file first** — this adapter only adds Copilot-specific glue.
 
 Harvest-side cross-vendor invariants live at [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md). Copilot adapters MAY vary orchestration glue but MUST NOT vary the contract.
 
@@ -16,7 +16,7 @@ Harvest-side cross-vendor invariants live at [`../common/runlog-harvest-contract
 | **Invocation** | "User invokes harvest explicitly" | Plain-language request in Copilot Chat agent mode ("harvest this session to runlog", "scan for runlog candidates"), or `@runlog harvest` invoking the runlog participant scope. Copilot Chat's slash-command surface varies across builds; explicit verbal invocation is the stable form. |
 | **Local Bash dispatch** | "Run `git log` and the verifier via Bash" | Copilot agent mode's terminal-tool integration. Each verifier invocation in Step 4 (route-to-runlog-author) requires user approval, or auto-approval if `runlog-verifier` is whitelisted in Copilot's trust settings. If terminal access is denied the skill MUST refuse to submit. |
 | **Agent-loop iteration** | "Sequential per-candidate route to runlog-author" | Each picked candidate is its own complete pass through runlog-author Step 2 → 3 → 4. The 5-round verifier retry cap (inherited from runlog-author) applies per-candidate. Copilot agent mode stays in the loop across turns. |
-| **Session-context discovery** | "In-frame fallback; per-host transcript optional" | Copilot Chat does not expose a stable on-disk transcript path. The adapter falls back to in-frame conversation context — the normative fallback per the cross-vendor contract — and uses the terminal tool for the recent-commits scan (`git log --oneline -10`). |
+| **Session-transcript discovery** | "In-frame fallback; per-host transcript optional" | Copilot Chat does not expose a stable on-disk transcript path. The adapter falls back to in-frame conversation context — the normative fallback per the cross-vendor contract — and uses the terminal tool for the recent-commits scan (`git log --oneline -10`). |
 | **Picker rendering** | "Numbered list, comma-select grammar" | Copilot Chat renders the numbered list inline. The user replies in chat following the comma-select grammar from the canonical body (`<n>(',' <n>)* | 'skip' <n> | 'all' | 'none'`). Per-item edit-before-submit is offered as a follow-up agent-mode turn before the verifier dispatches. |
 | **Draft persistence** | "Vendor scratch dir" | Write per-candidate drafts to `.runlog-harvest/<unit_id>.yaml` in the workspace (gitignored). Distinct from runlog-author's `.runlog-author/` so the two skills do not clobber each other's scratch state. Copilot agent mode can edit the file directly so the user can inspect the draft before approving the verifier call. Cleaned up on successful submit. |
 
@@ -97,6 +97,7 @@ Adapter shipped 2026-05-01 alongside the canonical harvest body (M01-S03 wave 2)
 ## Further Reading
 
 - [`../runlog-harvest/SKILL.md`](../runlog-harvest/SKILL.md) — canonical harvest body (READ FIRST)
+- [`../runlog-harvest/DESIGN.md`](../runlog-harvest/DESIGN.md) — design rationale and open questions
 - [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) — harvest-side cross-vendor invariants
 - [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md) — Step 4 hand-off target
 - [`./runlog-author.md`](./runlog-author.md) — Copilot author adapter

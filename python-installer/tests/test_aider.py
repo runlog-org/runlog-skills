@@ -275,12 +275,58 @@ def test_install_does_not_touch_read_list(make_host, tmp_path):
     assert read_block_before in raw, \
         "read: list must be preserved byte-for-byte (auto-wiring deferred)"
 
-    # The runlog.md path must NOT have been added to the read: list.
-    assert "runlog.md" not in raw.split("read:")[1].split("mcp-servers:")[0], \
+    # None of the runlog skill paths must have been added to the read: list.
+    read_section = raw.split("read:")[1].split("mcp-servers:")[0]
+    assert "runlog.md" not in read_section, \
         "installer must not auto-wire ~/.aider/runlog.md into read: list"
+    assert "runlog-author.md" not in read_section, \
+        "installer must not auto-wire runlog-author.md into read: list"
+    assert "runlog-harvest.md" not in read_section, \
+        "installer must not auto-wire runlog-harvest.md into read: list"
 
     # SKILL_DEST must be at the documented path so the user can wire it manually.
     expected_skill_dest = tmp_path / ".aider" / "runlog.md"
     assert host.SKILL_DEST == expected_skill_dest, \
         f"SKILL_DEST must be at ~/.aider/runlog.md; got {host.SKILL_DEST}"
     assert host.SKILL_DEST.is_file(), "SKILL_DEST must exist after install"
+
+
+# ---------------------------------------------------------------------------
+# 12. install writes all three skill files (read, author, harvest)
+# ---------------------------------------------------------------------------
+
+def test_install_writes_all_three_skills(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
+    host.install(api_key="sk-runlog-testkey")
+
+    aider_dir = tmp_path / ".aider"
+    assert (aider_dir / "runlog.md").is_file()
+    assert (aider_dir / "runlog-author.md").is_file()
+    assert (aider_dir / "runlog-harvest.md").is_file()
+
+
+# ---------------------------------------------------------------------------
+# 13. uninstall removes all three skill files
+# ---------------------------------------------------------------------------
+
+def test_uninstall_removes_all_three_skills(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
+    host.install(api_key="sk-runlog-testkey")
+
+    aider_dir = tmp_path / ".aider"
+    assert (aider_dir / "runlog-author.md").is_file()
+    assert (aider_dir / "runlog-harvest.md").is_file()
+
+    host.uninstall()
+
+    assert not (aider_dir / "runlog.md").exists()
+    assert not (aider_dir / "runlog-author.md").exists()
+    assert not (aider_dir / "runlog-harvest.md").exists()

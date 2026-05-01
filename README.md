@@ -114,7 +114,8 @@ skills/
 ├── .mcp.json                               # ✅ MCP server registered when plugin installs
 ├── skills/                                 # ✅ Plugin-discoverable skills (mirrors of canonical bodies)
 │   ├── runlog/SKILL.md
-│   └── runlog-author/SKILL.md
+│   ├── runlog-author/SKILL.md
+│   └── runlog-harvest/SKILL.md
 ├── installer/                              # ✅ npx @runlog/install package source
 │   ├── package.json
 │   ├── index.js
@@ -192,10 +193,10 @@ The contract is framework-agnostic; per-vendor adapters swap orchestration glue,
 
 When the cross-vendor contract changes (e.g. a new MUST-NOT rule or a tool-call shape update), the change pattern is:
 
-1. Update `common/four-point-client-contract.md` and/or `common/runlog-author-contract.md` (single source of truth).
-2. Re-sync each per-vendor SKILL.md / runlog-author.md by re-reading the canonical body and bringing the vendor wrapper in line.
+1. Update `common/four-point-client-contract.md`, `common/runlog-author-contract.md`, and/or `common/runlog-harvest-contract.md` (single source of truth).
+2. Re-sync each per-vendor SKILL.md / runlog-author.md / runlog-harvest.md by re-reading the canonical body and bringing the vendor wrapper in line.
 3. The bodies are deliberately ~80% similar across vendors — the vendor-specific glue is concentrated in the **Setup** sections and a few notes paragraphs.
-4. Re-sync the plugin's discovery copies: `cp claude-code/SKILL.md skills/runlog/SKILL.md` and `cp runlog-author/SKILL.md skills/runlog-author/SKILL.md`. (The `skills/` tree is what Claude Code's plugin loader reads; the canonical bodies stay at their established paths so existing per-vendor wrappers don't need to chase a path move. CIFS doesn't allow symlinks, so they're plain copies.)
+4. Re-sync the plugin's discovery copies: `cp claude-code/SKILL.md skills/runlog/SKILL.md`, `cp runlog-author/SKILL.md skills/runlog-author/SKILL.md`, and `cp runlog-harvest/SKILL.md skills/runlog-harvest/SKILL.md`. (The `skills/` tree is what Claude Code's plugin loader reads; the canonical bodies stay at their established paths so existing per-vendor wrappers don't need to chase a path move. CIFS doesn't allow symlinks, so they're plain copies.)
 
 The npx installer (`installer/index.js`) fetches `<vendor>/SKILL.md` live from `main` on GitHub at install time, so it always pulls the latest canonical body — no version coupling to maintain.
 

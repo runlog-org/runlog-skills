@@ -1,7 +1,8 @@
 """copilot.py — Host adapter for GitHub Copilot (VS Code).
 
 Installs the Runlog MCP server block into VS Code's user-scope MCP config
-file and copies the SKILL.md as a Copilot instruction file.
+file and concatenates the read / author / harvest skill bodies into a
+single Copilot instruction file.
 
 VS Code reads MCP server config from two locations:
   - Workspace scope:  .vscode/mcp.json  (per-project)
@@ -30,10 +31,12 @@ Source:
   - copilot/SKILL.md §Setup step 3
   - https://code.visualstudio.com/docs/copilot/customization/mcp-servers
 
-The Copilot instruction (SKILL.md) is copied to .github/copilot-instructions.md
-in the user's home directory so it is picked up by Copilot Chat's agent mode.
+The Copilot instructions (the Runlog read / author / harvest bundle) are
+copied to .github/copilot-instructions.md in the user's home directory so
+they are picked up by Copilot Chat's agent mode. The three skill bodies
+are concatenated with ``# === Runlog <label> skill ===`` section headers.
 
-Fallback mode: `add-mcp` does not support the VS Code Copilot MCP config
+Fallback mode: ``add-mcp`` does not support the VS Code Copilot MCP config
 file at user scope, so this adapter edits the JSONC config directly.
 """
 
@@ -43,7 +46,7 @@ import sys
 from pathlib import Path
 from typing import Literal
 
-from runlog_install import jsonc
+from runlog_install import jsonc, skill_writer
 
 
 def _vscode_user_dir() -> Path:
@@ -62,6 +65,12 @@ def _vscode_user_dir() -> Path:
     )
 
 
+# Source SKILL files: <repo-root>/copilot/{SKILL,runlog-author,runlog-harvest}.md
+# parents[0]=hosts/  [1]=runlog_install/  [2]=src/  [3]=python-installer/
+# [4]=runlog-skills/ (repo root).
+_VENDOR_DIR = Path(__file__).resolve().parents[4] / "copilot"
+
+
 class CopilotHost:
     """Host adapter for GitHub Copilot / VS Code (fallback mode — direct JSONC edit)."""
 
@@ -69,9 +78,8 @@ class CopilotHost:
     target_key: str = "copilot"
     mode: Literal["delegated", "fallback"] = "fallback"
 
-    # Copilot instruction file: home/.github/copilot-instructions.md
-    # VS Code Copilot loads this automatically when
-    # github.copilot.chat.codeGeneration.useInstructionFiles is true (default).
+    # Copilot instruction file: home/.github/copilot-instructions.md.
+    # All three Runlog skills concatenate into this single shared file.
     SKILL_DEST: Path = Path.home() / ".github" / "copilot-instructions.md"
 
     # VS Code user-scope MCP config: <user-data-dir>/mcp.json
@@ -83,10 +91,17 @@ class CopilotHost:
     except RuntimeError:
         SETTINGS_PATH: Path = Path.home() / ".config" / "Code" / "User" / "mcp.json"
 
-    # Source SKILL.md: <repo-root>/copilot/SKILL.md
-    # parents[0]=hosts/  [1]=runlog_install/  [2]=src/  [3]=python-installer/
-    # [4]=runlog-skills/ (repo root).
-    _SKILL_SRC: Path = Path(__file__).resolve().parents[4] / "copilot" / "SKILL.md"
+    _SKILL_SRC: Path = _VENDOR_DIR / "SKILL.md"
+
+    @property
+    def skill_sources(self) -> list[tuple[Path, Path, str]]:
+        """Three specs sharing the same dest (copilot-instructions.md) — concatenated on write."""
+        src_root = self._SKILL_SRC.parent
+        return [
+            (self._SKILL_SRC, self.SKILL_DEST, "read"),
+            (src_root / "runlog-author.md", self.SKILL_DEST, "author"),
+            (src_root / "runlog-harvest.md", self.SKILL_DEST, "harvest"),
+        ]
 
     def install(self, api_key: str | None = None) -> None:
         """Write Copilot instructions and merge the runlog MCP block into mcp.json.
@@ -101,19 +116,10 @@ class CopilotHost:
                 "written into mcp.json."
             )
 
-        # 1. Validate source SKILL.md exists.
-        skill_src = self._SKILL_SRC
-        if not skill_src.is_file():
-            raise FileNotFoundError(
-                f"Source skill file not found: copilot/SKILL.md "
-                f"(expected at {skill_src})"
-            )
+        # 1. Write the concatenated read / author / harvest bundle to copilot-instructions.md.
+        skill_writer.write_skills(self.skill_sources, self.name)
 
-        # 2. Copy SKILL.md to SKILL_DEST (mkdir -p parent).
-        self.SKILL_DEST.parent.mkdir(parents=True, exist_ok=True)
-        self.SKILL_DEST.write_text(skill_src.read_text(encoding="utf-8"), encoding="utf-8")
-
-        # 3. Read SETTINGS_PATH (or a minimal seed if missing / empty).
+        # 2. Read SETTINGS_PATH (or a minimal seed if missing / empty).
         # Seed with a "servers" key to avoid the JSONC bootstrap-path
         # inserting a leading comma into an empty root object.
         _SEED = '{\n  "servers": {}\n}'
@@ -123,7 +129,7 @@ class CopilotHost:
         else:
             text = _SEED
 
-        # 4. Insert / replace the runlog MCP block under "servers".
+        # 3. Insert / replace the runlog MCP block under "servers".
         # VS Code uses "servers" (not "mcpServers") in its mcp.json schema.
         # Source: https://code.visualstudio.com/docs/copilot/customization/mcp-servers
         mcp_block = {
@@ -135,7 +141,7 @@ class CopilotHost:
         }
         text = jsonc.add_to_object(text, ("servers",), "runlog", mcp_block)
 
-        # 5. Write back, mode 0600.
+        # 4. Write back, mode 0600.
         self.SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
         self.SETTINGS_PATH.write_text(text, encoding="utf-8")
         self.SETTINGS_PATH.chmod(0o600)
@@ -145,12 +151,8 @@ class CopilotHost:
 
     def uninstall(self) -> None:
         """Remove Copilot instructions and the runlog MCP block from mcp.json."""
-        # 1. Remove SKILL_DEST; rmdir empty parent dirs.
-        self.SKILL_DEST.unlink(missing_ok=True)
-        try:
-            self.SKILL_DEST.parent.rmdir()
-        except OSError:
-            pass  # directory not empty or doesn't exist — leave it alone
+        # 1. Remove SKILL_DEST (single shared file); rmdir empty parent dir.
+        skill_writer.remove_skills(self.skill_sources)
 
         # 2. Read SETTINGS_PATH (skip if missing).
         if not self.SETTINGS_PATH.exists():

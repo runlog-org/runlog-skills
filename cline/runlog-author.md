@@ -58,7 +58,7 @@ If any check fails, Cline emits the gap and a single fix command, then stops. Th
 
 - "publish that to runlog"
 - "submit this gotcha as a runlog entry"
-- "/runlog-publish"
+- "/runlog:publish"
 
 Both heuristic and explicit invocations route into the same four-step flow.
 

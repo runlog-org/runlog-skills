@@ -1,6 +1,6 @@
 # `@runlog/install`
 
-One-command install of the Runlog client skill for any of the nine supported agent frameworks.
+One-command install of the Runlog client skills for any of the nine supported agent frameworks. Each vendor gets all three skills: the read-side `runlog` skill, the `runlog-author` write skill, and the `runlog-harvest` skill.
 
 ```sh
 npx @runlog/install <vendor>
@@ -10,7 +10,7 @@ Supported vendors: `claude-code`, `cursor`, `cline`, `continue`, `windsurf`, `ai
 
 ## How it works
 
-The installer fetches the right per-vendor `SKILL.md` from `runlog-org/runlog-skills` on GitHub (always the latest `main`) and either prints it (default, safe) or writes it to the vendor's rules path (`--write`).
+The installer fetches all three per-vendor skill bodies (`SKILL.md`, `runlog-author.md`, `runlog-harvest.md`) from `runlog-org/runlog-skills` on GitHub (always the latest `main`) and either prints them (default, safe) or writes them to the vendor's rules paths (`--write`). For shared-file vendors the three bodies are concatenated with section headers so you can merge them into your existing rules file.
 
 It **does not** auto-edit your vendor's MCP config — `~/.cursor/mcp.json`, `~/.codeium/windsurf/mcp_config.json`, etc. likely already contain other servers, and clobbering them would be a footgun. Instead the installer prints the Runlog MCP server snippet and you paste it in.
 
@@ -32,19 +32,19 @@ npx @runlog/install cline --write
 
 ## Vendor-by-vendor
 
-| Vendor | `--write` target | `--global` target | Mode |
+| Vendor | `--write` targets (read / author / harvest) | `--global` target prefix | Mode |
 |---|---|---|---|
-| `claude-code` | `.claude/skills/runlog/SKILL.md` | `~/.claude/skills/runlog/SKILL.md` | write supported (but the plugin marketplace is preferred — see below) |
-| `cursor` | `.cursor/rules/runlog.mdc` | `~/.cursor/rules/runlog.mdc` | write supported |
-| `cline` | `.clinerules/runlog.md` | — | write supported |
-| `continue` | `.continue/rules/runlog.md` | — | write supported |
-| `windsurf` | `.windsurfrules` | — | print only (shared file) |
-| `aider` | `CONVENTIONS.md` | — | print only (shared file) |
-| `copilot` | `.github/copilot-instructions.md` | — | print only (shared file) |
-| `jetbrains` | IDE Settings → AI Assistant | — | print only (settings UI) |
-| `zed` | `.rules` | — | print only (shared file) |
+| `claude-code` | `.claude/skills/runlog/SKILL.md`, `.claude/skills/runlog-author/SKILL.md`, `.claude/skills/runlog-harvest/SKILL.md` | `~/.claude/skills/...` | write supported (but the plugin marketplace is preferred — see below) |
+| `cursor` | `.cursor/rules/runlog.mdc`, `.cursor/rules/runlog-author.mdc`, `.cursor/rules/runlog-harvest.mdc` | `~/.cursor/rules/...` | write supported |
+| `cline` | `.clinerules/runlog.md`, `.clinerules/runlog-author.md`, `.clinerules/runlog-harvest.md` | — | write supported |
+| `continue` | `.continue/rules/runlog.md`, `.continue/rules/runlog-author.md`, `.continue/rules/runlog-harvest.md` | — | write supported |
+| `windsurf` | `.windsurfrules` | — | print only (shared file, 3 sections) |
+| `aider` | `CONVENTIONS.md` | — | print only (shared file, 3 sections) |
+| `copilot` | `.github/copilot-instructions.md` | — | print only (shared file, 3 sections) |
+| `jetbrains` | IDE Settings → AI Assistant | — | print only (settings UI, 3 sections) |
+| `zed` | `.rules` | — | print only (shared file, 3 sections) |
 
-Vendors marked "print only" already share a single file with your other rules — auto-overwriting it would clobber your existing content, so the installer prints the body for you to merge.
+Vendors marked "print only" already share a single file with your other rules — auto-overwriting it would clobber your existing content, so the installer prints all three skill bodies (read, author, harvest) with section dividers for you to merge.
 
 ## Claude Code: prefer the plugin marketplace
 

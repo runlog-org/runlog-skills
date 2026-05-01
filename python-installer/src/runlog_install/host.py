@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Literal, Protocol
 
 
@@ -10,15 +11,27 @@ class Host(Protocol):
     """delegated → SKILL placement only; user runs `npx add-mcp` for the MCP config edit.
     fallback → SKILL placement + JSONC merge of the MCP block into the host's config file."""
 
+    skill_sources: list[tuple[Path, Path, str]]
+    """The three Runlog skill specs as (source_path, dest_path, section_label) tuples.
+
+    Covers the read, author, and harvest skills.  Hosts with a per-skill
+    directory (e.g. claude-code, cursor) give each spec a unique dest_path;
+    hosts with a single shared rules file (e.g. zed, windsurf, copilot)
+    point all three specs at the same dest_path and rely on
+    skill_writer.write_skills to concatenate the bodies with section
+    headers derived from section_label."""
+
     def install(self, api_key: str | None = None) -> None:
-        """Write SKILL file and (for fallback mode) merge MCP server block into host settings.
+        """Write all three SKILL files (read, author, harvest) and (for fallback
+        mode) merge the MCP server block into host settings.
 
         api_key is only used by fallback hosts; delegated hosts ignore it.
         """
         ...
 
     def uninstall(self) -> None:
-        """Remove SKILL file and (for fallback mode) MCP server block from host settings."""
+        """Remove the three SKILL files and (for fallback mode) the MCP server
+        block from host settings."""
         ...
 
     def post_install_hint(self) -> str | None:

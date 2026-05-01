@@ -1,8 +1,9 @@
 """
 claude_code.py — ClaudeCodeHost adapter for the Runlog installer.
 
-Delegated mode: installs only the SKILL.md file. MCP server wiring is
-handled separately by the user via `npx add-mcp`.
+Delegated mode: installs the read / author / harvest SKILL.md trio under
+``~/.claude/skills/``. MCP server wiring is handled separately by the user
+via ``npx add-mcp``.
 """
 
 from __future__ import annotations
@@ -10,43 +11,52 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
+from runlog_install import skill_writer
+
+# Source SKILL files: <repo-root>/claude-code/{SKILL,runlog-author,runlog-harvest}.md.
+# When installed via `pip install -e python-installer/` from inside the
+# runlog-skills repo, __file__ resolves to:
+#   <repo-root>/python-installer/src/runlog_install/hosts/claude_code.py
+# parents[0]=hosts/  [1]=runlog_install/  [2]=src/  [3]=python-installer/
+# [4]=runlog-skills/ (repo root). Matches the other host adapters.
+_VENDOR_DIR = Path(__file__).resolve().parents[4] / "claude-code"
+
 
 class ClaudeCodeHost:
     name = "Claude Code"
     target_key = "claude"
     mode: Literal["delegated", "fallback"] = "delegated"
 
-    SKILL_DEST = Path.home() / ".claude" / "skills" / "runlog" / "SKILL.md"
+    # Read-skill destination + source. Kept as named attributes for
+    # back-compat with the make_host fixture (which monkeypatches them) and
+    # for clarity in the per-vendor target table.
+    SKILL_DEST: Path = Path.home() / ".claude" / "skills" / "runlog" / "SKILL.md"
+    _SKILL_SRC: Path = _VENDOR_DIR / "SKILL.md"
 
-    # Source SKILL.md: lives at <repo-root>/claude-code/SKILL.md.
-    # When installed via `pip install -e python-installer/` from inside the
-    # runlog-skills repo, __file__ resolves to:
-    #   <repo-root>/python-installer/src/runlog_install/hosts/claude_code.py
-    # parents[0]=hosts/  [1]=runlog_install/  [2]=src/  [3]=python-installer/
-    # [4]=runlog-skills/ (repo root). Matches CursorHost._SKILL_SRC.
-    _SKILL_SRC = (
-        Path(__file__).resolve().parents[4] / "claude-code" / "SKILL.md"
-    )
+    @property
+    def skill_sources(self) -> list[tuple[Path, Path, str]]:
+        """Three (source, dest, label) specs covering read / author / harvest.
+
+        Derived dynamically from SKILL_DEST and _SKILL_SRC so the make_host
+        fixture's monkeypatches transparently redirect every dest under
+        tmp_path. The author and harvest sources live alongside the read
+        source in the same vendor directory.
+        """
+        skills_root = self.SKILL_DEST.parent.parent  # .../skills/
+        src_root = self._SKILL_SRC.parent             # .../claude-code/ (or fixture dir)
+        return [
+            (self._SKILL_SRC, self.SKILL_DEST, "read"),
+            (src_root / "runlog-author.md", skills_root / "runlog-author" / "SKILL.md", "author"),
+            (src_root / "runlog-harvest.md", skills_root / "runlog-harvest" / "SKILL.md", "harvest"),
+        ]
 
     # ------------------------------------------------------------------
     # install
     # ------------------------------------------------------------------
 
     def install(self, api_key: str | None = None) -> None:
-        """Write SKILL.md to its destination (mkdir -p parent)."""
-        skill_dest = self.SKILL_DEST
-
-        # 1. Validate source SKILL.md exists.
-        skill_src = self._SKILL_SRC
-        if not skill_src.is_file():
-            raise FileNotFoundError(
-                f"Source skill file not found: claude-code/SKILL.md "
-                f"(expected at {skill_src})"
-            )
-
-        # 2. Copy SKILL.md to destination (mkdir -p parent).
-        skill_dest.parent.mkdir(parents=True, exist_ok=True)
-        skill_dest.write_text(skill_src.read_text(encoding="utf-8"), encoding="utf-8")
+        """Write the read, author, and harvest SKILL files."""
+        skill_writer.write_skills(self.skill_sources, self.name)
 
     # ------------------------------------------------------------------
     # uninstall
@@ -56,17 +66,7 @@ class ClaudeCodeHost:
         return None
 
     def uninstall(self) -> None:
-        """Remove SKILL.md and clean up empty parent directories."""
-        skill_dest = self.SKILL_DEST
-
-        # 1. Remove SKILL.md; clean up empty parent dirs.
-        skill_dest.unlink(missing_ok=True)
-        # Walk up through parent dirs, removing each if empty (stop at ~/.claude).
+        """Remove all three SKILL files and clean up empty parent directories
+        (stopping at ``~/.claude``)."""
         stop = Path.home() / ".claude"
-        parent = skill_dest.parent
-        while parent != stop and parent != parent.parent:
-            try:
-                parent.rmdir()  # only succeeds if empty
-            except OSError:
-                break
-            parent = parent.parent
+        skill_writer.remove_skills(self.skill_sources, rmdir_stop=stop)

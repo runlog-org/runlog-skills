@@ -12,7 +12,7 @@
     {
       "name": "runlog",
       "source": "./",
-      "description": "Runlog MCP client skills (read + write) plus auto-registration of the Runlog HTTP MCP server.",
+      "description": "Runlog MCP client skills (read + write + harvest) plus auto-registration of the Runlog HTTP MCP server.",
       "version": "0.1.0",
       "author": {
         "name": "Runlog",

@@ -1,13 +1,13 @@
 ---
 name: runlog-harvest
-description: End-of-session retrospective Runlog submission flow for Continue.dev. Scans the in-frame conversation and recent git commits for missed external-dependency findings, scores and dedups, surfaces a numbered picker, and routes selected drafts through the canonical runlog-author verification + signing + runlog_submit pipeline. Continue-specific orchestration around the canonical body at skills/runlog-harvest/SKILL.md.
+description: End-of-session retrospective Runlog submission flow for Continue.dev. Scans the in-frame conversation and recent git commits for missed external-dependency findings, scores and dedups, surfaces a numbered picker, and routes selected drafts through the canonical runlog-author verification + signing + runlog_submit pipeline. Continue-specific orchestration around the canonical body at runlog-harvest/SKILL.md.
 ---
 
 ## runlog-harvest (Continue.dev adapter)
 
-This is the Continue wrapper of the canonical `runlog-harvest` skill. The four-step harvest flow (Scan -> Score+Dedup -> Pick -> Route-to-author), the four-point classification check, the score floor (>= 0.7), the comma-select picker grammar, and the MUST-NOT list are inherited verbatim from `skills/runlog-harvest/SKILL.md`. **Read that file first** — this adapter only adds Continue-specific glue.
+This is the Continue wrapper of the canonical `runlog-harvest` skill. The four-step harvest flow (Scan -> Score+Dedup -> Pick -> Route-to-author), the four-point classification check, the score floor (>= 0.7), the comma-select picker grammar, and the MUST-NOT list are inherited verbatim from [`../runlog-harvest/SKILL.md`](../runlog-harvest/SKILL.md). **Read that file first** — this adapter only adds Continue-specific glue.
 
-Harvest-side cross-vendor invariants live at `skills/common/runlog-harvest-contract.md`. Continue adapters MAY vary orchestration glue but MUST NOT vary the contract.
+Harvest-side cross-vendor invariants live at [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md). Continue adapters MAY vary orchestration glue but MUST NOT vary the contract.
 
 ## What this adapter changes (orchestration glue only)
 
@@ -16,7 +16,7 @@ Harvest-side cross-vendor invariants live at `skills/common/runlog-harvest-contr
 | **Invocation** | "User invokes harvest explicitly" | Plain-language request in chat (`"harvest this session to runlog"`, "scan this session for runlog candidates"). If Continue's slash-command surface is enabled in the installed version, `/harvest` also routes here; availability is per-version, so the verbal form is the published literal. |
 | **Local Bash dispatch** | "Run `git log` and the verifier via Bash" | Continue's terminal-tool integration (varies by version — some support agent-driven shell commands, others require the user to run them and paste output). Recent-commits scan is `git log --oneline -10` via the terminal tool. When terminal access is unavailable the adapter MUST refuse to invoke Step 4 (route-to-runlog-author), since the verifier loop cannot run. |
 | **Agent-loop iteration** | "Sequential per-candidate route to runlog-author" | Continue's agent-mode session is the unit of iteration. Each picked candidate is its own complete pass through runlog-author Step 2 -> 3 -> 4; the 5-round verifier retry cap (inherited from runlog-author) applies per-candidate. |
-| **Session-context discovery** | "In-frame fallback; per-host transcript optional" | Continue exposes no stable on-disk transcript path the adapter can rely on across versions, so harvest falls back to in-frame conversation context (per harvest contract OQ #3). The fallback is normative and works on every Continue install. |
+| **Session-transcript discovery** | "In-frame fallback; per-host transcript optional" | Continue exposes no stable on-disk transcript path the adapter can rely on across versions, so harvest falls back to in-frame conversation context (per harvest contract OQ #3). The fallback is normative and works on every Continue install. |
 | **Picker rendering** | "Numbered list, comma-select grammar" | Continue's chat panel renders the numbered list inline. User replies follow the comma-select grammar from the canonical body (`<n>(',' <n>)* | 'skip' <n> | 'all' | 'none'`). Per-item edit-before-submit is offered as a follow-up turn after the user picks — Continue's chat affordances are turn-based, not inline. |
 | **Draft persistence** | "Vendor scratch dir" | Write per-candidate drafts to `.runlog-harvest/<unit_id>.yaml` in the workspace (gitignored). Distinct from runlog-author's `.runlog-author/` so the two skills do not clobber each other's scratch state. Cleaned up on successful submit. |
 
@@ -27,15 +27,15 @@ Harvest-side cross-vendor invariants live at `skills/common/runlog-harvest-contr
 
 ## What this adapter MUST NOT change
 
-Per `skills/common/runlog-harvest-contract.md`:
+Per [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md):
 
-1. The four-point client contract (`skills/common/four-point-client-contract.md`) — the four-point check on each candidate.
+1. The four-point client contract ([`../common/four-point-client-contract.md`](../common/four-point-client-contract.md)) — the four-point check on each candidate.
 2. The four-step harvest flow (steps may not be skipped or reordered).
 3. The score floor (>= 0.7). The adapter MAY raise it; MUST NOT lower it.
 4. The comma-select picker grammar.
 5. Per-item edit-before-submit availability.
-6. **Routing through runlog-author for verification + submission.** Continue MUST NOT call `runlog_submit` directly from harvest. Selected candidates enter `skills/runlog-author/SKILL.md` at Step 2; the verifier loop and signed bundle are produced there. If Continue's terminal access is unavailable in the installed version, the skill MUST refuse to invoke Step 4.
-7. The MUST NOT list in `skills/runlog-harvest/SKILL.md`.
+6. **Routing through runlog-author for verification + submission.** Continue MUST NOT call `runlog_submit` directly from harvest. Selected candidates enter [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md) at Step 2; the verifier loop and signed bundle are produced there. If Continue's terminal access is unavailable in the installed version, the skill MUST refuse to invoke Step 4.
+7. The MUST NOT list in [`../runlog-harvest/SKILL.md`](../runlog-harvest/SKILL.md).
 
 ## Continue-specific pre-flight checks
 
@@ -66,7 +66,7 @@ If the installed Continue version exposes slash commands, `/harvest` also routes
 
 ## Setup
 
-This adapter assumes the read-side Continue skill (`skills/continue/SKILL.md`) and the Continue runlog-author adapter (`skills/continue/runlog-author.md`) are already configured. Harvest adds no new prerequisites beyond those — the verifier binary, the keypair, and `RUNLOG_API_KEY` are inherited from runlog-author.
+This adapter assumes the read-side Continue skill ([`./SKILL.md`](./SKILL.md)) and the Continue runlog-author adapter ([`./runlog-author.md`](./runlog-author.md)) are already configured. Harvest adds no new prerequisites beyond those — the verifier binary, the keypair, and `RUNLOG_API_KEY` are inherited from runlog-author.
 
 Add this adapter as a Continue rule in `config.yaml`:
 
@@ -74,10 +74,10 @@ Add this adapter as a Continue rule in `config.yaml`:
 rules:
   - name: runlog-harvest
     rule: |
-      <paste the body of skills/continue/runlog-harvest.md here>
+      <paste the body of continue/runlog-harvest.md here>
 ```
 
-Or commit `skills/continue/runlog-harvest.md` to the workspace and reference via Continue's context-provider / @file mechanism (per the version installed).
+Or commit `continue/runlog-harvest.md` to the workspace and reference via Continue's context-provider / @file mechanism (per the version installed).
 
 ## Status
 
@@ -85,12 +85,12 @@ Adapter shipped 2026-05-01 alongside the canonical harvest body (M01-S03 wave 2)
 
 ## Further Reading
 
-- `skills/runlog-harvest/SKILL.md` — canonical harvest body (READ FIRST)
-- `skills/runlog-harvest/DESIGN.md` — design rationale and open questions
-- `skills/common/runlog-harvest-contract.md` — harvest-side cross-vendor invariants
-- `skills/runlog-author/SKILL.md` — Step 4 hand-off target
-- `skills/continue/runlog-author.md` — mid-flow companion (Continue adapter)
-- `skills/continue/SKILL.md` — read-side Continue adapter
+- [`../runlog-harvest/SKILL.md`](../runlog-harvest/SKILL.md) — canonical harvest body (READ FIRST)
+- [`../runlog-harvest/DESIGN.md`](../runlog-harvest/DESIGN.md) — design rationale and open questions
+- [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) — harvest-side cross-vendor invariants
+- [`../runlog-author/SKILL.md`](../runlog-author/SKILL.md) — Step 4 hand-off target
+- [`./runlog-author.md`](./runlog-author.md) — mid-flow companion (Continue adapter)
+- [`./SKILL.md`](./SKILL.md) — read-side Continue adapter
 
 ---
 

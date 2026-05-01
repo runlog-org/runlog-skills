@@ -238,3 +238,44 @@ def test_install_preserves_top_level_rules_section(make_host, tmp_path):
     assert "rules:" in raw, "rules: section must be preserved"
     assert "name: my-team-rules" in raw, "rules content must be preserved"
     assert "Always check team docs first." in raw, "rules rule text must be preserved"
+
+
+# ---------------------------------------------------------------------------
+# 11. install writes all three skill files (read, author, harvest)
+# ---------------------------------------------------------------------------
+
+def test_install_writes_all_three_skills(make_host, tmp_path):
+    host = make_host(
+        ContinueHost,
+        skill_dest=tmp_path / ".continue" / "rules" / "runlog.md",
+        settings_path=tmp_path / ".continue" / "config.yaml",
+    )
+    host.install(api_key="sk-runlog-testkey")
+
+    rules_dir = tmp_path / ".continue" / "rules"
+    assert (rules_dir / "runlog.md").is_file()
+    assert (rules_dir / "runlog-author.md").is_file()
+    assert (rules_dir / "runlog-harvest.md").is_file()
+
+
+# ---------------------------------------------------------------------------
+# 12. uninstall removes all three skill files
+# ---------------------------------------------------------------------------
+
+def test_uninstall_removes_all_three_skills(make_host, tmp_path):
+    host = make_host(
+        ContinueHost,
+        skill_dest=tmp_path / ".continue" / "rules" / "runlog.md",
+        settings_path=tmp_path / ".continue" / "config.yaml",
+    )
+    host.install(api_key="sk-runlog-testkey")
+
+    rules_dir = tmp_path / ".continue" / "rules"
+    assert (rules_dir / "runlog-author.md").is_file()
+    assert (rules_dir / "runlog-harvest.md").is_file()
+
+    host.uninstall()
+
+    assert not (rules_dir / "runlog.md").exists()
+    assert not (rules_dir / "runlog-author.md").exists()
+    assert not (rules_dir / "runlog-harvest.md").exists()

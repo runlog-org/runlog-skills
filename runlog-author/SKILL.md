@@ -24,8 +24,9 @@ The verifier requirement is structural — `CLAUDE.md` invariant #6 ("verificati
 - The fix is in internal/proprietary code or team-specific conventions.
 - The user's machine is not configured (see Prerequisites — surface a single diagnostic, do not partial-draft).
 - A near-duplicate entry already exists in Runlog (`runlog_report` against the existing entry instead).
+- The user wants to capture multiple findings at session-end rather than mid-flow — recommend `/runlog:harvest` (the [`runlog-harvest`](../runlog-harvest/SKILL.md) skill) instead, which scans the just-finished session for missed external-dependency findings and routes selected ones back through this author flow.
 
-The skill MUST NOT propose publication on every external-dependency fix. Default is silence; propose only when all four conditions hold. Heuristics propose; explicit invocation (`/runlog-publish`) always works.
+The skill MUST NOT propose publication on every external-dependency fix. Default is silence; propose only when all four conditions hold. Heuristics propose; explicit invocation (`/runlog:publish`) always works.
 
 ## Decision Flow
 
@@ -175,7 +176,7 @@ Derived from the load-bearing invariants in `CLAUDE.md`. Violating any of them c
 
 ## Cross-Vendor Parity
 
-This skill body is deliberately framework-agnostic. The canonical body lives at `skills/runlog-author/SKILL.md`; per-vendor adapters under `skills/<vendor>/runlog-author/` swap orchestration glue (how the skill is invoked, how local Bash is dispatched, how the agent loop iterates on verifier rejections) — they do **not** re-author the contract.
+This skill body is deliberately framework-agnostic. The canonical body lives at `runlog-author/SKILL.md`; per-vendor adapters at `<vendor>/runlog-author.md` swap orchestration glue (how the skill is invoked, how local Bash is dispatched, how the agent loop iterates on verifier rejections) — they do **not** re-author the contract.
 
 Target vendor priority: **Cursor → Cline → Continue → Windsurf → Aider → Copilot via VS Code MCP → JetBrains AI → Zed.** Cross-vendor coverage is structurally important for Runlog: the defensive moat against agent-platform incumbents shipping their own knowledge layers is being the layer that works across all of them. See [`../README.md`](../README.md) for the cross-vendor expansion plan and [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md) for the invariants every vendor adapter MUST preserve.
 
@@ -208,6 +209,7 @@ The skill performs a one-time pre-flight check on first invocation and surfaces 
 |---|---|
 | [`./DESIGN.md`](./DESIGN.md) | Design rationale and open questions for this skill |
 | [`../claude-code/SKILL.md`](../claude-code/SKILL.md) | Read-side companion (`runlog_search` / `runlog_report` flow) |
+| [`../runlog-harvest/SKILL.md`](../runlog-harvest/SKILL.md) | Retrospective companion — end-of-session scan that routes picks back through this author flow |
 | [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md) | The cross-vendor read+write client contract |
 | [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md) | Author-side cross-vendor invariants |
 | `runlog-docs/04-submission-format.md` | Full submission spec: entry YAML, placeholders, verification types, cassettes, scope rules |

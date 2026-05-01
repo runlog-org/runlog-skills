@@ -205,3 +205,24 @@ def test_mode_attribute(make_host, tmp_path):
         settings_path=tmp_path / ".codeium" / "windsurf" / "mcp_config.json",
     )
     assert host.mode == "fallback"
+
+
+# ---------------------------------------------------------------------------
+# 10. install concatenates all three skill sections into globalrules
+# ---------------------------------------------------------------------------
+
+def test_install_concatenates_three_skill_sections(make_host, tmp_path):
+    host = make_host(
+        WindsurfHost,
+        skill_dest=tmp_path / ".codeium" / "windsurf" / "globalrules",
+        settings_path=tmp_path / ".codeium" / "windsurf" / "mcp_config.json",
+    )
+    host.install(api_key="sk-runlog-testkey")
+
+    body = host.SKILL_DEST.read_text(encoding="utf-8")
+    assert "# === Runlog read skill ===" in body
+    assert "# === Runlog author skill ===" in body
+    assert "# === Runlog harvest skill ===" in body
+    assert "Runlog read skill" in body
+    assert "Runlog author skill" in body
+    assert "Runlog harvest skill" in body
