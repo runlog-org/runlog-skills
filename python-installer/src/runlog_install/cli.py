@@ -12,7 +12,7 @@ import sys
 
 from runlog_install import registry
 
-_TARGETS = ("claude", "copilot", "cursor", "windsurf", "zed")
+_TARGETS = ("aider", "claude", "continue", "copilot", "cursor", "windsurf", "zed")
 _REGISTER_URL = "https://runlog.org/register"
 _VERIFIER_RELEASE_BASE = (
     "https://github.com/runlog-org/runlog-verifier/releases/latest/download"
@@ -36,11 +36,12 @@ def _build_parser() -> argparse.ArgumentParser:
             "Delegated hosts (skill placement only — wire MCP via `npx add-mcp`):\n"
             "  claude, cursor, zed\n\n"
             "Fallback hosts (skill placement + direct MCP-config edit):\n"
-            "  windsurf, copilot\n\n"
+            "  aider, continue, copilot, windsurf\n\n"
             "The four hosts add-mcp covers natively (claude, cursor, cline, zed)\n"
             "use delegated mode; hosts add-mcp doesn't reach use fallback.\n"
-            "Continue.dev, Aider, and JetBrains AI Assistant are not yet supported\n"
-            "(deferred — their config formats need writers we haven't built)."
+            "JetBrains AI Assistant is not yet supported (deferred — its config\n"
+            "format is not yet pinned down to a JSON path; likely XML, out of\n"
+            "scope for the stdlib-only installer)."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -65,7 +66,7 @@ def _build_parser() -> argparse.ArgumentParser:
         description=(
             "Uninstall Runlog from a coding host.\n\n"
             "Delegated hosts: claude, cursor, zed\n"
-            "Fallback hosts:  windsurf, copilot"
+            "Fallback hosts:  aider, continue, copilot, windsurf"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -132,6 +133,13 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(f"Installed Runlog skill + MCP block for {host.name}.")
                 print("Restart your editor for the changes to take effect.")
+                if args.target == "aider":
+                    # Aider's read: list is YAML list-of-strings; out of yamlc scope.
+                    # User wires the SKILL into their --read list manually.
+                    print(
+                        "Aider note: add `~/.aider/runlog.md` to the `read:` list in "
+                        "`~/.aider.conf.yml` so Aider auto-loads the skill."
+                    )
 
             return 0
 

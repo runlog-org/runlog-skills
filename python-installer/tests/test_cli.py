@@ -197,7 +197,7 @@ def test_install_unknown_target_returns_nonzero(monkeypatch, capsys):
     assert "Available targets" in captured.err
 
 
-@pytest.mark.parametrize("target", ["claude", "copilot", "cursor", "windsurf", "zed"])
+@pytest.mark.parametrize("target", ["aider", "claude", "continue", "copilot", "cursor", "windsurf", "zed"])
 def test_uninstall_all_targets(monkeypatch, capsys, target):
     """uninstall --target <any> → host.uninstall() called, returns 0."""
     fake_cls, fake_host = _make_fake_host_class("delegated")
@@ -248,9 +248,11 @@ def test_help_groups_hosts_by_mode():
     assert "claude" in help_text
     assert "cursor" in help_text
     assert "zed" in help_text
-    # Fallback group lists the two fallback hosts
+    # Fallback group lists the four fallback hosts
     assert "windsurf" in help_text
     assert "copilot" in help_text
+    assert "aider" in help_text
+    assert "continue" in help_text
     # Delegated section appears before Fallback section
     assert help_text.index("Delegated hosts") < help_text.index("Fallback hosts")
 
@@ -258,3 +260,31 @@ def test_help_groups_hosts_by_mode():
 def test_targets_complete():
     """_TARGETS and HOSTS keys must be identical — catches future drift."""
     assert set(cli._TARGETS) == set(HOSTS.keys())
+
+
+def test_install_aider_prints_read_hint(monkeypatch, capsys):
+    """install --target aider prints the manual `read:` wiring hint."""
+    fake_cls, fake_host = _make_fake_host_class("fallback")
+    monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
+
+    rc = cli.main(["install", "--target", "aider", "--api-key", "sk-runlog-test"])
+
+    assert rc == 0
+    captured = capsys.readouterr()
+    assert "Aider note" in captured.out or "read:" in captured.out
+    # The hint should reference the SKILL_DEST path so the user can copy-paste.
+    assert "~/.aider/runlog.md" in captured.out
+
+
+@pytest.mark.parametrize("target", ["windsurf", "copilot", "continue"])
+def test_install_non_aider_omits_read_hint(monkeypatch, capsys, target):
+    """The Aider-specific `read:` hint must not leak into other fallback hosts."""
+    fake_cls, fake_host = _make_fake_host_class("fallback")
+    monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
+
+    rc = cli.main(["install", "--target", target, "--api-key", "sk-runlog-test"])
+
+    assert rc == 0
+    captured = capsys.readouterr()
+    assert "Aider note" not in captured.out
+    assert "~/.aider/runlog.md" not in captured.out

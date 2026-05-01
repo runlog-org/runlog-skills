@@ -35,11 +35,22 @@ The installer is stdlib-only — no third-party Python dependencies.
 
 | Target | Host | Mode | What gets installed |
 |---|---|---|---|
-| `claude` | Claude Code | delegated | SKILL only — wire MCP via `npx add-mcp` |
-| `cursor` | Cursor | delegated | SKILL only — wire MCP via `npx add-mcp` |
-| `zed` | Zed | delegated | SKILL only — wire MCP via `npx add-mcp` |
-| `windsurf` | Windsurf | fallback | SKILL + MCP-config edit at `~/.codeium/windsurf/mcp_config.json` |
-| `copilot` | GitHub Copilot (VS Code) | fallback | SKILL + MCP-config edit at VS Code's user `mcp.json` |
+| `aider`    | Aider                    | fallback  | SKILL at `~/.aider/runlog.md` + MCP-config edit at `~/.aider.conf.yml` |
+| `claude`   | Claude Code              | delegated | SKILL only — wire MCP via `npx add-mcp` |
+| `continue` | Continue.dev             | fallback  | SKILL + MCP-config edit at `~/.continue/config.yaml` |
+| `copilot`  | GitHub Copilot (VS Code) | fallback  | SKILL + MCP-config edit at VS Code's user `mcp.json` |
+| `cursor`   | Cursor                   | delegated | SKILL only — wire MCP via `npx add-mcp` |
+| `windsurf` | Windsurf                 | fallback  | SKILL + MCP-config edit at `~/.codeium/windsurf/mcp_config.json` |
+| `zed`      | Zed                      | delegated | SKILL only — wire MCP via `npx add-mcp` |
+
+**Note for Aider users:** `runlog install --target aider` writes the SKILL
+to `~/.aider/runlog.md` and merges the runlog MCP block into
+`~/.aider.conf.yml`'s `mcp-servers` list. Aider's `read:` list (which
+auto-loads files into the chat context) is a YAML list-of-strings — outside
+the installer's list-of-dicts merge scope. Add this entry yourself:
+
+    read:
+      - ~/.aider/runlog.md
 
 **Delegated mode** — `add-mcp` covers these hosts natively. The installer
 places the SKILL file and then tells you to run `npx add-mcp` for the MCP
@@ -58,6 +69,8 @@ runlog install --target cursor
 runlog install --target zed
 
 # Fallback hosts — API key is required
+runlog install --target aider    --api-key $RUNLOG_API_KEY
+runlog install --target continue --api-key $RUNLOG_API_KEY
 runlog install --target windsurf --api-key $RUNLOG_API_KEY
 runlog install --target copilot  --api-key $RUNLOG_API_KEY
 
@@ -109,10 +122,7 @@ The following hosts are explicitly deferred from this release:
 
 | Host | Reason |
 |---|---|
-| Continue.dev | Config is YAML in 1.0+; the legacy JSON format uses an array-shape MCP server list — both incompatible with the stdlib JSONC helper |
-| Aider | Config is YAML and uses an array-shape MCP server list |
-| JetBrains AI Assistant | Config format not confirmed as JSON with a documented path; likely XML |
+| JetBrains AI Assistant | Config format not pinned down to a JSON path; likely XML — out of scope for the stdlib-only installer |
 
-These hosts' config formats require writers we haven't built. Track via
-M01-S02 follow-up items. In the meantime, install Runlog for these hosts
-manually — see each host's `SKILL.md` in the [runlog-skills repo](https://github.com/runlog-org/runlog-skills).
+In the meantime, install Runlog for this host manually — see the host's
+`SKILL.md` in the [runlog-skills repo](https://github.com/runlog-org/runlog-skills).
