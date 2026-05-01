@@ -9,7 +9,7 @@ import sys
 
 from runlog_install import registry
 
-_TARGETS = ("claude", "cursor")
+_TARGETS = ("claude", "cursor", "zed")
 _REGISTER_URL = "https://runlog.org/register"
 
 

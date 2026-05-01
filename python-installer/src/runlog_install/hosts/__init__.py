@@ -2,8 +2,10 @@
 
 from runlog_install.hosts.claude_code import ClaudeCodeHost
 from runlog_install.hosts.cursor import CursorHost
+from runlog_install.hosts.zed import ZedHost
 
 HOSTS: dict[str, type] = {
     "claude": ClaudeCodeHost,
     "cursor": CursorHost,
+    "zed": ZedHost,
 }
