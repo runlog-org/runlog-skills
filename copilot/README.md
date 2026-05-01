@@ -10,6 +10,7 @@ VS Code GitHub Copilot adapter of the Runlog client skills. Tracker: `[F25] Mult
 |---|---|
 | [`SKILL.md`](./SKILL.md) | Read-side skill body — install in `.github/copilot-instructions.md` or `.github/instructions/runlog.instructions.md` |
 | [`runlog-author.md`](./runlog-author.md) | Write-side adapter |
+| [`runlog-harvest.md`](./runlog-harvest.md) | Harvest skill — end-of-session retrospective submission flow |
 
 ## Quickstart
 
@@ -62,7 +63,16 @@ VS Code GitHub Copilot adapter of the Runlog client skills. Tracker: `[F25] Mult
 
 5. **(Optional) Install the write-side skill** for verified submissions — same shape with `runlog-author.md`. Then build the verifier and generate a keypair (see SKILL.md §Setup).
 
-6. **Verify** — open Copilot Chat → switch to Agent mode. `runlog_search`, `runlog_submit`, `runlog_report` should appear in the available tools panel.
+6. **(Optional) Install the harvest skill** for end-of-session retrospective submission:
+
+   ```sh
+   mkdir -p .github/instructions
+   cp skills/copilot/runlog-harvest.md .github/instructions/runlog-harvest.instructions.md
+   ```
+
+   Invoke at session end in Copilot Chat agent mode with `@runlog harvest`. Same verifier prerequisites as the write-side skill.
+
+7. **Verify** — open Copilot Chat → switch to Agent mode. `runlog_search`, `runlog_submit`, `runlog_report` should appear in the available tools panel.
 
 ## Cross-vendor invariants
 
@@ -70,6 +80,7 @@ Every Copilot adapter MUST honour:
 
 - The four rules in [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md).
 - The author-side rules in [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md).
+- The harvest-side rules in [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) (when running the harvest skill).
 
 The contract is framework-agnostic; Copilot adapters swap orchestration glue (`.github/copilot-instructions.md` rule loading, agent-mode tool dispatch, VS Code secret-store integration), not the rules.
 

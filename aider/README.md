@@ -10,6 +10,7 @@ Aider adapter of the Runlog client skills. Aider is CLI-native and operates on a
 |---|---|
 | [`SKILL.md`](./SKILL.md) | Read-side skill body — install in `CONVENTIONS.md` or via `--read` |
 | [`runlog-author.md`](./runlog-author.md) | Write-side adapter |
+| [`runlog-harvest.md`](./runlog-harvest.md) | Harvest skill — end-of-session retrospective submission flow |
 
 ## Quickstart
 
@@ -55,7 +56,9 @@ Aider adapter of the Runlog client skills. Aider is CLI-native and operates on a
 
 4. **(Optional) Install the write-side skill** for verified submissions — same shape as above with `runlog-author.md`. Then build the verifier and generate a keypair (see SKILL.md §Setup).
 
-5. **Verify** in an Aider session:
+5. **(Optional) Install the harvest skill** for end-of-session retrospective submission — same shape as above with `runlog-harvest.md` (append to `CONVENTIONS.md` or drop at `.aider/runlog-harvest.md` and reference via `read:`). Invoke before `/exit` with `/ask harvest this session to runlog`. Same verifier prerequisites as the write-side skill.
+
+6. **Verify** in an Aider session:
 
    ```text
    > Can you call runlog_search with the query "stripe webhook"?
@@ -67,6 +70,7 @@ Every Aider adapter MUST honour:
 
 - The four rules in [`../common/four-point-client-contract.md`](../common/four-point-client-contract.md).
 - The author-side rules in [`../common/runlog-author-contract.md`](../common/runlog-author-contract.md).
+- The harvest-side rules in [`../common/runlog-harvest-contract.md`](../common/runlog-harvest-contract.md) (when running the harvest skill).
 
 The contract is framework-agnostic; Aider adapters swap orchestration glue (CLI lifetime as the session boundary, `/run` for verifier dispatch, `CONVENTIONS.md` rule loading), not the rules.
 
