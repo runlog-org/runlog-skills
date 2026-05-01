@@ -16,30 +16,51 @@ from runlog_install import cli
 # Fake Host helpers
 # ---------------------------------------------------------------------------
 
-class _FakeHost:
-    """Minimal Host implementation that records calls."""
+class _FakeDelegatedHost:
+    """Minimal delegated Host implementation that records calls."""
 
-    name = "Fake Host"
-    target_key = "fake"
+    name = "Fake Delegated Host"
+    target_key = "fake-delegated"
+    mode = "delegated"
 
     def __init__(self):
-        self.install_calls: list[str] = []
+        self.install_calls: list = []
         self.uninstall_calls: int = 0
 
-    def install(self, api_key: str) -> None:
+    def install(self, api_key=None) -> None:
         self.install_calls.append(api_key)
 
     def uninstall(self) -> None:
         self.uninstall_calls += 1
 
 
-def _make_fake_host_class() -> tuple[type, _FakeHost]:
+class _FakeFallbackHost:
+    """Minimal fallback Host implementation that records calls."""
+
+    name = "Fake Fallback Host"
+    target_key = "fake-fallback"
+    mode = "fallback"
+
+    def __init__(self):
+        self.install_calls: list = []
+        self.uninstall_calls: int = 0
+
+    def install(self, api_key=None) -> None:
+        self.install_calls.append(api_key)
+
+    def uninstall(self) -> None:
+        self.uninstall_calls += 1
+
+
+def _make_fake_host_class(host_mode: str = "delegated") -> tuple[type, object]:
     """Return a fake Host *class* and the shared instance it will produce."""
-    instance = _FakeHost()
+    base_cls = _FakeDelegatedHost if host_mode == "delegated" else _FakeFallbackHost
+    instance = base_cls()
 
     class FakeHostClass:
         name = instance.name
         target_key = instance.target_key
+        mode = instance.mode
 
         def __new__(cls):
             return instance
@@ -48,12 +69,56 @@ def _make_fake_host_class() -> tuple[type, _FakeHost]:
 
 
 # ---------------------------------------------------------------------------
-# Tests
+# Tests — delegated mode (claude, cursor)
+# ---------------------------------------------------------------------------
+
+def test_install_delegated_no_api_key_needed(monkeypatch, capsys):
+    """install --target claude (delegated) succeeds without any API key."""
+    fake_cls, fake_host = _make_fake_host_class("delegated")
+    monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
+    monkeypatch.delenv("RUNLOG_API_KEY", raising=False)
+
+    rc = cli.main(["install", "--target", "claude"])
+
+    assert rc == 0
+    assert fake_host.install_calls == [None]
+    captured = capsys.readouterr()
+    assert "npx add-mcp" in captured.out
+
+
+def test_install_delegated_ignores_api_key_arg(monkeypatch, capsys):
+    """install --target claude --api-key ... (delegated) still passes None to install."""
+    fake_cls, fake_host = _make_fake_host_class("delegated")
+    monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
+
+    rc = cli.main(["install", "--target", "claude", "--api-key", "sk-ignored"])
+
+    assert rc == 0
+    # Delegated hosts receive None regardless of --api-key
+    assert fake_host.install_calls == [None]
+    captured = capsys.readouterr()
+    assert "npx add-mcp" in captured.out
+
+
+def test_install_delegated_message_contains_npx_add_mcp(monkeypatch, capsys):
+    """Delegated post-install message mentions `npx add-mcp`."""
+    fake_cls, fake_host = _make_fake_host_class("delegated")
+    monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
+
+    cli.main(["install", "--target", "cursor"])
+
+    captured = capsys.readouterr()
+    assert "npx add-mcp" in captured.out
+    assert "https://api.runlog.org/mcp" in captured.out
+
+
+# ---------------------------------------------------------------------------
+# Tests — fallback mode (future hosts)
 # ---------------------------------------------------------------------------
 
 def test_install_with_api_key_arg(monkeypatch):
-    """install --target claude --api-key sk-test-123 → install called with that key."""
-    fake_cls, fake_host = _make_fake_host_class()
+    """install --target X --api-key sk-test-123 (fallback) → install called with that key."""
+    fake_cls, fake_host = _make_fake_host_class("fallback")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
     rc = cli.main(["install", "--target", "claude", "--api-key", "sk-test-123"])
@@ -63,8 +128,8 @@ def test_install_with_api_key_arg(monkeypatch):
 
 
 def test_install_uses_env_var(monkeypatch):
-    """install --target cursor with RUNLOG_API_KEY set → install called with env value."""
-    fake_cls, fake_host = _make_fake_host_class()
+    """install --target X with RUNLOG_API_KEY set (fallback) → install called with env value."""
+    fake_cls, fake_host = _make_fake_host_class("fallback")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
     monkeypatch.setenv("RUNLOG_API_KEY", "env-key-abc")
 
@@ -75,8 +140,8 @@ def test_install_uses_env_var(monkeypatch):
 
 
 def test_install_empty_interactive_input_returns_nonzero(monkeypatch, capsys):
-    """install with no key and no env, simulated empty input → non-zero + URL printed."""
-    fake_cls, fake_host = _make_fake_host_class()
+    """install with no key and no env (fallback), simulated empty input → non-zero + URL printed."""
+    fake_cls, fake_host = _make_fake_host_class("fallback")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
     monkeypatch.delenv("RUNLOG_API_KEY", raising=False)
     # Simulate the user pressing Enter with no input.
@@ -89,6 +154,22 @@ def test_install_empty_interactive_input_returns_nonzero(monkeypatch, capsys):
     assert "runlog.org/register" in captured.err
     assert fake_host.install_calls == []
 
+
+def test_install_fallback_message_no_npx(monkeypatch, capsys):
+    """Fallback post-install message does NOT mention npx add-mcp."""
+    fake_cls, fake_host = _make_fake_host_class("fallback")
+    monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
+
+    cli.main(["install", "--target", "claude", "--api-key", "sk-abc"])
+
+    captured = capsys.readouterr()
+    assert "npx add-mcp" not in captured.out
+    assert "Restart your editor" in captured.out
+
+
+# ---------------------------------------------------------------------------
+# Tests — shared / registry
+# ---------------------------------------------------------------------------
 
 def test_install_unknown_target_returns_nonzero(monkeypatch, capsys):
     """install --target X where registry rejects X → non-zero + 'Available targets' on stderr."""
@@ -110,7 +191,7 @@ def test_install_unknown_target_returns_nonzero(monkeypatch, capsys):
 
 def test_uninstall_claude(monkeypatch, capsys):
     """uninstall --target claude → host.uninstall() called, returns 0."""
-    fake_cls, fake_host = _make_fake_host_class()
+    fake_cls, fake_host = _make_fake_host_class("delegated")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
     rc = cli.main(["uninstall", "--target", "claude"])
@@ -123,7 +204,7 @@ def test_uninstall_claude(monkeypatch, capsys):
 
 def test_uninstall_cursor(monkeypatch, capsys):
     """uninstall --target cursor → host.uninstall() called, returns 0."""
-    fake_cls, fake_host = _make_fake_host_class()
+    fake_cls, fake_host = _make_fake_host_class("delegated")
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
     rc = cli.main(["uninstall", "--target", "cursor"])

@@ -6,7 +6,6 @@ import argparse
 import getpass
 import os
 import sys
-from typing import Sequence
 
 from runlog_install import registry
 
@@ -66,25 +65,38 @@ def main(argv: list[str] | None = None) -> int:
             host_cls = registry.get_host(args.target)
             host = host_cls()
 
-            # Resolve API key: CLI arg > env var > interactive prompt.
-            if args.api_key:
-                api_key = args.api_key
-            elif os.environ.get("RUNLOG_API_KEY"):
-                api_key = os.environ["RUNLOG_API_KEY"]
+            if host.mode == "delegated":
+                # Delegated hosts don't need an API key — skip resolution.
+                api_key = None
             else:
-                api_key = getpass.getpass(
-                    f"Runlog API key ({_REGISTER_URL} if you don't have one): "
-                )
-                if not api_key:
-                    print(
-                        f"No API key provided. Register at {_REGISTER_URL}",
-                        file=sys.stderr,
+                # Fallback hosts: resolve API key from CLI arg > env var > prompt.
+                if args.api_key:
+                    api_key = args.api_key
+                elif os.environ.get("RUNLOG_API_KEY"):
+                    api_key = os.environ["RUNLOG_API_KEY"]
+                else:
+                    api_key = getpass.getpass(
+                        f"Runlog API key ({_REGISTER_URL} if you don't have one): "
                     )
-                    return 1
+                    if not api_key:
+                        print(
+                            f"No API key provided. Register at {_REGISTER_URL}",
+                            file=sys.stderr,
+                        )
+                        return 1
 
             host.install(api_key)
-            print(f"Installed Runlog skill + MCP block for {host.name}.")
-            print("Restart your editor for the changes to take effect.")
+
+            if host.mode == "delegated":
+                print(f"Installed Runlog skill for {host.name}.")
+                print(
+                    "Run `npx add-mcp https://api.runlog.org/mcp` to wire up the MCP server,"
+                    " then restart your editor."
+                )
+            else:
+                print(f"Installed Runlog skill + MCP block for {host.name}.")
+                print("Restart your editor for the changes to take effect.")
+
             return 0
 
         except (FileNotFoundError, KeyError, OSError) as exc:
