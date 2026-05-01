@@ -34,6 +34,9 @@ class _FakeDelegatedHost:
     def uninstall(self) -> None:
         self.uninstall_calls += 1
 
+    def post_install_hint(self) -> str | None:
+        return None
+
 
 class _FakeFallbackHost:
     """Minimal fallback Host implementation that records calls."""
