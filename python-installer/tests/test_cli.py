@@ -52,6 +52,9 @@ class _FakeFallbackHost:
     def uninstall(self) -> None:
         self.uninstall_calls += 1
 
+    def post_install_hint(self) -> str | None:
+        return None
+
 
 def _make_fake_host_class(host_mode: str = "delegated") -> tuple[type, object]:
     """Return a fake Host *class* and the shared instance it will produce."""
@@ -265,14 +268,23 @@ def test_targets_complete():
 def test_install_aider_prints_read_hint(monkeypatch, capsys):
     """install --target aider prints the manual `read:` wiring hint."""
     fake_cls, fake_host = _make_fake_host_class("fallback")
+
+    # Override post_install_hint on the instance to return the Aider-specific hint.
+    # The real AiderHost.post_install_hint() returns this string; we replicate it
+    # here so the CLI test doesn't depend on importing AiderHost directly.
+    _AIDER_HINT = (
+        "Aider note: add `~/.aider/runlog.md` to the `read:` list in "
+        "`~/.aider.conf.yml` so Aider auto-loads the skill."
+    )
+    fake_host.post_install_hint = lambda: _AIDER_HINT
+
     monkeypatch.setattr("runlog_install.registry.get_host", lambda name: fake_cls)
 
     rc = cli.main(["install", "--target", "aider", "--api-key", "sk-runlog-test"])
 
     assert rc == 0
     captured = capsys.readouterr()
-    assert "Aider note" in captured.out or "read:" in captured.out
-    # The hint should reference the SKILL_DEST path so the user can copy-paste.
+    assert "Aider note" in captured.out
     assert "~/.aider/runlog.md" in captured.out
 
 

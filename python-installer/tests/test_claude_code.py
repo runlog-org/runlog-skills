@@ -10,33 +10,14 @@ from runlog_install.hosts.claude_code import ClaudeCodeHost
 
 
 # ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _make_host(monkeypatch, tmp_path: Path) -> ClaudeCodeHost:
-    """Return a ClaudeCodeHost with Path.home() and paths redirected to tmp_path."""
-    monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
-
-    # Provide a stub source SKILL.md so tests don't depend on repo layout.
-    fake_skill_src = tmp_path / "_src_skill" / "SKILL.md"
-    fake_skill_src.parent.mkdir(parents=True, exist_ok=True)
-    fake_skill_src.write_text("# Runlog skill (test stub)\n", encoding="utf-8")
-
-    # Re-evaluate the class-level paths so they reflect the patched home.
-    monkeypatch.setattr(ClaudeCodeHost, "SKILL_DEST",
-                        tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md")
-    monkeypatch.setattr(ClaudeCodeHost, "_SKILL_SRC", fake_skill_src)
-
-    host = ClaudeCodeHost()
-    return host
-
-
-# ---------------------------------------------------------------------------
 # Test 1: install writes SKILL.md (delegated — does not touch settings.json)
 # ---------------------------------------------------------------------------
 
-def test_install_fresh(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_fresh(make_host, tmp_path):
+    host = make_host(
+        ClaudeCodeHost,
+        skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
+    )
     host.install()
 
     # SKILL.md written
@@ -48,8 +29,11 @@ def test_install_fresh(monkeypatch, tmp_path):
 # Test 2: install is idempotent — calling twice overwrites SKILL, no error
 # ---------------------------------------------------------------------------
 
-def test_install_idempotent(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_idempotent(make_host, tmp_path):
+    host = make_host(
+        ClaudeCodeHost,
+        skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
+    )
     host.install()
     host.install()
     assert host.SKILL_DEST.is_file()
@@ -59,8 +43,11 @@ def test_install_idempotent(monkeypatch, tmp_path):
 # Test 3: install does NOT write settings.json (delegated mode)
 # ---------------------------------------------------------------------------
 
-def test_install_does_not_write_settings_json(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_does_not_write_settings_json(make_host, tmp_path):
+    host = make_host(
+        ClaudeCodeHost,
+        skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
+    )
     host.install()
 
     settings_json = tmp_path / ".claude" / "settings.json"
@@ -73,8 +60,11 @@ def test_install_does_not_write_settings_json(monkeypatch, tmp_path):
 # Test 4: uninstall removes SKILL file and cleans up empty parent dirs
 # ---------------------------------------------------------------------------
 
-def test_uninstall_removes_skill_and_parents(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_uninstall_removes_skill_and_parents(make_host, tmp_path):
+    host = make_host(
+        ClaudeCodeHost,
+        skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
+    )
 
     # Create the SKILL.md so unlink has something to remove.
     host.SKILL_DEST.parent.mkdir(parents=True, exist_ok=True)
@@ -91,8 +81,11 @@ def test_uninstall_removes_skill_and_parents(monkeypatch, tmp_path):
 # Test 5: uninstall is idempotent when nothing is installed
 # ---------------------------------------------------------------------------
 
-def test_uninstall_idempotent_when_nothing_installed(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_uninstall_idempotent_when_nothing_installed(make_host, tmp_path):
+    host = make_host(
+        ClaudeCodeHost,
+        skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
+    )
     # Should not raise even though SKILL.md doesn't exist.
     host.uninstall()
     assert not host.SKILL_DEST.exists()
@@ -102,6 +95,9 @@ def test_uninstall_idempotent_when_nothing_installed(monkeypatch, tmp_path):
 # Test 6: mode attribute is "delegated"
 # ---------------------------------------------------------------------------
 
-def test_mode_is_delegated(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_mode_is_delegated(make_host, tmp_path):
+    host = make_host(
+        ClaudeCodeHost,
+        skill_dest=tmp_path / ".claude" / "skills" / "runlog" / "SKILL.md",
+    )
     assert host.mode == "delegated"

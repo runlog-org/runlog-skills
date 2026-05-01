@@ -133,13 +133,9 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(f"Installed Runlog skill + MCP block for {host.name}.")
                 print("Restart your editor for the changes to take effect.")
-                if args.target == "aider":
-                    # Aider's read: list is YAML list-of-strings; out of yamlc scope.
-                    # User wires the SKILL into their --read list manually.
-                    print(
-                        "Aider note: add `~/.aider/runlog.md` to the `read:` list in "
-                        "`~/.aider.conf.yml` so Aider auto-loads the skill."
-                    )
+                hint = host.post_install_hint()
+                if hint:
+                    print(hint)
 
             return 0
 

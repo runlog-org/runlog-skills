@@ -35,6 +35,9 @@ class CursorHost:
         self.SKILL_DEST.parent.mkdir(parents=True, exist_ok=True)
         self.SKILL_DEST.write_text(skill_src.read_text(encoding="utf-8"), encoding="utf-8")
 
+    def post_install_hint(self) -> str | None:
+        return None
+
     def uninstall(self) -> None:
         """Remove runlog.mdc and clean up empty parent directory."""
         # 1. Remove SKILL_DEST; rmdir empty parent dirs

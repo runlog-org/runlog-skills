@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import os
-import stat
 from pathlib import Path
 
 import pytest
@@ -12,39 +10,15 @@ from runlog_install.hosts.aider import AiderHost
 
 
 # ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _make_host(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> AiderHost:
-    """Return an AiderHost with all paths redirected under tmp_path."""
-    monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
-
-    # Provide a stub source SKILL.md so tests don't depend on repo layout.
-    fake_skill_src = tmp_path / "_src_skill" / "SKILL.md"
-    fake_skill_src.parent.mkdir(parents=True, exist_ok=True)
-    fake_skill_src.write_text("# Runlog skill (Aider test stub)\n", encoding="utf-8")
-
-    monkeypatch.setattr(
-        AiderHost,
-        "SKILL_DEST",
-        tmp_path / ".aider" / "runlog.md",
-    )
-    monkeypatch.setattr(
-        AiderHost,
-        "SETTINGS_PATH",
-        tmp_path / ".aider.conf.yml",
-    )
-    monkeypatch.setattr(AiderHost, "_SKILL_SRC", fake_skill_src)
-
-    return AiderHost()
-
-
-# ---------------------------------------------------------------------------
 # 1. install writes SKILL (~/.aider/runlog.md)
 # ---------------------------------------------------------------------------
 
-def test_install_writes_skill(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_writes_skill(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
     host.install(api_key="sk-runlog-testkey")
 
     assert host.SKILL_DEST.is_file(), "~/.aider/runlog.md should be created"
@@ -55,8 +29,12 @@ def test_install_writes_skill(monkeypatch, tmp_path):
 # 2. install writes MCP block with correct URL + Bearer header
 # ---------------------------------------------------------------------------
 
-def test_install_writes_mcp_block(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_writes_mcp_block(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
     api_key = "sk-runlog-abc123xyz"
     host.install(api_key=api_key)
 
@@ -74,8 +52,12 @@ def test_install_writes_mcp_block(monkeypatch, tmp_path):
 # 3. install preserves sibling MCP servers
 # ---------------------------------------------------------------------------
 
-def test_install_preserves_sibling_mcp_servers(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_preserves_sibling_mcp_servers(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
 
     # Pre-populate ~/.aider.conf.yml with a sibling mcp-servers entry.
     host.SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -98,8 +80,12 @@ def test_install_preserves_sibling_mcp_servers(monkeypatch, tmp_path):
 # 4. install is idempotent — installing twice produces no duplicate
 # ---------------------------------------------------------------------------
 
-def test_install_idempotent(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_idempotent(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
 
     host.install(api_key="sk-runlog-first")
     host.install(api_key="sk-runlog-second")
@@ -120,8 +106,12 @@ def test_install_idempotent(monkeypatch, tmp_path):
 # 5. install(api_key=None) raises ValueError
 # ---------------------------------------------------------------------------
 
-def test_install_requires_api_key(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_requires_api_key(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
     with pytest.raises(ValueError):
         host.install(api_key=None)
 
@@ -130,8 +120,12 @@ def test_install_requires_api_key(monkeypatch, tmp_path):
 # 6. install preserves pre-existing YAML comments
 # ---------------------------------------------------------------------------
 
-def test_install_preserves_yaml_comments(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_preserves_yaml_comments(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
 
     # Write a ~/.aider.conf.yml that contains YAML comments around mcp-servers.
     yaml_text = (
@@ -159,8 +153,12 @@ def test_install_preserves_yaml_comments(monkeypatch, tmp_path):
 # 7. uninstall removes skill file and MCP block, preserves sibling
 # ---------------------------------------------------------------------------
 
-def test_uninstall_removes_skill_and_mcp_block(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_uninstall_removes_skill_and_mcp_block(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
     host.install(api_key="sk-runlog-testkey")
 
     # Add a sibling entry so the file is not left empty.
@@ -185,8 +183,12 @@ def test_uninstall_removes_skill_and_mcp_block(monkeypatch, tmp_path):
 # 8. uninstall when nothing installed is a no-op
 # ---------------------------------------------------------------------------
 
-def test_uninstall_missing_is_noop(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_uninstall_missing_is_noop(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
     # Should not raise even when no files exist.
     host.uninstall()
     host.uninstall()
@@ -197,8 +199,12 @@ def test_uninstall_missing_is_noop(monkeypatch, tmp_path):
 # 9. mode attribute is "fallback"
 # ---------------------------------------------------------------------------
 
-def test_mode_attribute(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_mode_attribute(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
     assert host.mode == "fallback"
 
 
@@ -206,8 +212,12 @@ def test_mode_attribute(monkeypatch, tmp_path):
 # 10. install preserves other top-level sections unchanged
 # ---------------------------------------------------------------------------
 
-def test_install_preserves_top_level_other_section(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_preserves_top_level_other_section(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
 
     # Pre-populate with both mcp-servers and another top-level key.
     yaml_text = (
@@ -234,8 +244,12 @@ def test_install_preserves_top_level_other_section(monkeypatch, tmp_path):
 # 11. install does NOT touch the read: list (deferred — list-of-strings)
 # ---------------------------------------------------------------------------
 
-def test_install_does_not_touch_read_list(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_does_not_touch_read_list(make_host, tmp_path):
+    host = make_host(
+        AiderHost,
+        skill_dest=tmp_path / ".aider" / "runlog.md",
+        settings_path=tmp_path / ".aider.conf.yml",
+    )
 
     # Pre-populate config with a read: list (list-of-strings).
     yaml_text = (

@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 import json
-import stat
-import sys
 from pathlib import Path
 
 import pytest
@@ -13,39 +11,15 @@ from runlog_install.hosts.copilot import CopilotHost
 
 
 # ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _make_host(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> CopilotHost:
-    """Return a CopilotHost with all paths redirected under tmp_path."""
-    monkeypatch.setattr(Path, "home", staticmethod(lambda: tmp_path))
-
-    # Provide a stub source SKILL.md so tests don't depend on repo layout.
-    fake_skill_src = tmp_path / "_src_skill" / "SKILL.md"
-    fake_skill_src.parent.mkdir(parents=True, exist_ok=True)
-    fake_skill_src.write_text("# Runlog skill (Copilot test stub)\n", encoding="utf-8")
-
-    monkeypatch.setattr(
-        CopilotHost,
-        "SKILL_DEST",
-        tmp_path / ".github" / "copilot-instructions.md",
-    )
-    monkeypatch.setattr(
-        CopilotHost,
-        "SETTINGS_PATH",
-        tmp_path / ".config" / "Code" / "User" / "mcp.json",
-    )
-    monkeypatch.setattr(CopilotHost, "_SKILL_SRC", fake_skill_src)
-
-    return CopilotHost()
-
-
-# ---------------------------------------------------------------------------
 # 1. install writes SKILL (copilot-instructions.md)
 # ---------------------------------------------------------------------------
 
-def test_install_writes_skill(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_writes_skill(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
     host.install(api_key="sk-runlog-testkey")
 
     assert host.SKILL_DEST.is_file(), "copilot-instructions.md should be created"
@@ -56,8 +30,12 @@ def test_install_writes_skill(monkeypatch, tmp_path):
 # 2. install writes MCP block with correct type, URL + Bearer header
 # ---------------------------------------------------------------------------
 
-def test_install_writes_mcp_block(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_writes_mcp_block(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
     api_key = "sk-runlog-abc123xyz"
     host.install(api_key=api_key)
 
@@ -74,8 +52,12 @@ def test_install_writes_mcp_block(monkeypatch, tmp_path):
 # 3. install preserves sibling MCP servers
 # ---------------------------------------------------------------------------
 
-def test_install_preserves_sibling_mcp_servers(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_preserves_sibling_mcp_servers(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
 
     # Pre-populate mcp.json with a sibling server.
     host.SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -99,8 +81,12 @@ def test_install_preserves_sibling_mcp_servers(monkeypatch, tmp_path):
 # 4. install is idempotent — installing twice produces no duplicate
 # ---------------------------------------------------------------------------
 
-def test_install_idempotent(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_idempotent(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
 
     host.install(api_key="sk-runlog-first")
     host.install(api_key="sk-runlog-second")
@@ -121,8 +107,12 @@ def test_install_idempotent(monkeypatch, tmp_path):
 # 5. install(api_key=None) raises ValueError
 # ---------------------------------------------------------------------------
 
-def test_install_requires_api_key(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_requires_api_key(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
     with pytest.raises(ValueError):
         host.install(api_key=None)
 
@@ -131,8 +121,12 @@ def test_install_requires_api_key(monkeypatch, tmp_path):
 # 6. install preserves pre-existing JSONC comments
 # ---------------------------------------------------------------------------
 
-def test_install_preserves_jsonc_comments(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_install_preserves_jsonc_comments(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
 
     # Write a mcp.json that contains JSONC comments.
     jsonc_text = (
@@ -164,8 +158,12 @@ def test_install_preserves_jsonc_comments(monkeypatch, tmp_path):
 # 7. uninstall removes SKILL file and MCP block
 # ---------------------------------------------------------------------------
 
-def test_uninstall_removes_skill_and_mcp_block(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_uninstall_removes_skill_and_mcp_block(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
     host.install(api_key="sk-runlog-testkey")
 
     # Add a sibling so the file is not left empty.
@@ -185,8 +183,12 @@ def test_uninstall_removes_skill_and_mcp_block(monkeypatch, tmp_path):
 # 8. uninstall when nothing installed is a no-op
 # ---------------------------------------------------------------------------
 
-def test_uninstall_missing_is_noop(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_uninstall_missing_is_noop(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
     # Should not raise even when no files exist.
     host.uninstall()
     host.uninstall()
@@ -197,8 +199,12 @@ def test_uninstall_missing_is_noop(monkeypatch, tmp_path):
 # 9. mode attribute is "fallback"
 # ---------------------------------------------------------------------------
 
-def test_mode_attribute(monkeypatch, tmp_path):
-    host = _make_host(monkeypatch, tmp_path)
+def test_mode_attribute(make_host, tmp_path):
+    host = make_host(
+        CopilotHost,
+        skill_dest=tmp_path / ".github" / "copilot-instructions.md",
+        settings_path=tmp_path / ".config" / "Code" / "User" / "mcp.json",
+    )
     assert host.mode == "fallback"
 
 

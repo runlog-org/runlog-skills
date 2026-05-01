@@ -118,6 +118,12 @@ class AiderHost:
         self.SETTINGS_PATH.write_text(text, encoding="utf-8")
         self.SETTINGS_PATH.chmod(0o600)
 
+    def post_install_hint(self) -> str | None:
+        return (
+            "Aider note: add `~/.aider/runlog.md` to the `read:` list in "
+            "`~/.aider.conf.yml` so Aider auto-loads the skill."
+        )
+
     def uninstall(self) -> None:
         """Remove ~/.aider/runlog.md and the runlog MCP block from ~/.aider.conf.yml."""
         # 1. Remove SKILL_DEST; try to rmdir empty ~/.aider parent.

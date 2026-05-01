@@ -41,6 +41,9 @@ class ZedHost:
             self._SKILL_SRC.read_text(encoding="utf-8"), encoding="utf-8"
         )
 
+    def post_install_hint(self) -> str | None:
+        return None
+
     def uninstall(self) -> None:
         """Remove rules.md and walk up empty parent dirs (stop at ~/.config/zed)."""
         self.SKILL_DEST.unlink(missing_ok=True)

@@ -99,6 +99,9 @@ class ContinueHost:
         self.SETTINGS_PATH.write_text(text, encoding="utf-8")
         self.SETTINGS_PATH.chmod(0o600)
 
+    def post_install_hint(self) -> str | None:
+        return None
+
     def uninstall(self) -> None:
         """Remove rules/runlog.md and the runlog MCP block from config.yaml."""
         # 1. Remove SKILL_DEST; rmdir empty parent (~/.continue/rules).

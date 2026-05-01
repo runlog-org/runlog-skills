@@ -10,33 +10,14 @@ from runlog_install.hosts.cursor import CursorHost
 
 
 # ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _make_host(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> CursorHost:
-    """Return a CursorHost with all paths redirected under tmp_path."""
-    fake_home = tmp_path / "home"
-    fake_home.mkdir()
-    monkeypatch.setattr(Path, "home", staticmethod(lambda: fake_home))
-
-    # Create a fake SKILL.md so the source-file check doesn't fail.
-    fake_skill_src = tmp_path / "cursor" / "SKILL.md"
-    fake_skill_src.parent.mkdir(parents=True, exist_ok=True)
-    fake_skill_src.write_text("# Fake Runlog skill for tests\n", encoding="utf-8")
-
-    host = CursorHost()
-    # Override instance paths to use the fake home and fake skill source.
-    host.SKILL_DEST = fake_home / ".cursor" / "rules" / "runlog.mdc"
-    host._SKILL_SRC = fake_skill_src  # type: ignore[assignment]
-    return host
-
-
-# ---------------------------------------------------------------------------
 # 1. install writes runlog.mdc (delegated — does not touch mcp.json)
 # ---------------------------------------------------------------------------
 
-def test_install_fresh(tmp_path, monkeypatch):
-    host = _make_host(tmp_path, monkeypatch)
+def test_install_fresh(make_host, tmp_path):
+    host = make_host(
+        CursorHost,
+        skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
+    )
     host.install()
 
     assert host.SKILL_DEST.exists(), "runlog.mdc should be created"
@@ -46,8 +27,11 @@ def test_install_fresh(tmp_path, monkeypatch):
 # 2. install is idempotent — calling twice overwrites SKILL, no error
 # ---------------------------------------------------------------------------
 
-def test_install_idempotent(tmp_path, monkeypatch):
-    host = _make_host(tmp_path, monkeypatch)
+def test_install_idempotent(make_host, tmp_path):
+    host = make_host(
+        CursorHost,
+        skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
+    )
     host.install()
     host.install()
     assert host.SKILL_DEST.exists()
@@ -57,12 +41,14 @@ def test_install_idempotent(tmp_path, monkeypatch):
 # 3. install does NOT write mcp.json (delegated mode)
 # ---------------------------------------------------------------------------
 
-def test_install_does_not_write_mcp_json(tmp_path, monkeypatch):
-    host = _make_host(tmp_path, monkeypatch)
-    fake_home = tmp_path / "home"
+def test_install_does_not_write_mcp_json(make_host, tmp_path):
+    host = make_host(
+        CursorHost,
+        skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
+    )
     host.install()
 
-    mcp_json = fake_home / ".cursor" / "mcp.json"
+    mcp_json = tmp_path / ".cursor" / "mcp.json"
     assert not mcp_json.exists(), (
         "Delegated mode must not create mcp.json; MCP wiring is left to `npx add-mcp`."
     )
@@ -72,8 +58,11 @@ def test_install_does_not_write_mcp_json(tmp_path, monkeypatch):
 # 4. uninstall removes the rule file and cleans up the parent directory
 # ---------------------------------------------------------------------------
 
-def test_uninstall_removes_skill(tmp_path, monkeypatch):
-    host = _make_host(tmp_path, monkeypatch)
+def test_uninstall_removes_skill(make_host, tmp_path):
+    host = make_host(
+        CursorHost,
+        skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
+    )
 
     host.install()
     assert host.SKILL_DEST.exists()
@@ -86,8 +75,11 @@ def test_uninstall_removes_skill(tmp_path, monkeypatch):
 # 5. uninstall is idempotent when nothing is installed
 # ---------------------------------------------------------------------------
 
-def test_uninstall_idempotent_nothing_installed(tmp_path, monkeypatch):
-    host = _make_host(tmp_path, monkeypatch)
+def test_uninstall_idempotent_nothing_installed(make_host, tmp_path):
+    host = make_host(
+        CursorHost,
+        skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
+    )
     # Should not raise even when no files exist
     host.uninstall()
     host.uninstall()
@@ -97,6 +89,9 @@ def test_uninstall_idempotent_nothing_installed(tmp_path, monkeypatch):
 # 6. mode attribute is "delegated"
 # ---------------------------------------------------------------------------
 
-def test_mode_is_delegated(tmp_path, monkeypatch):
-    host = _make_host(tmp_path, monkeypatch)
+def test_mode_is_delegated(make_host, tmp_path):
+    host = make_host(
+        CursorHost,
+        skill_dest=tmp_path / ".cursor" / "rules" / "runlog.mdc",
+    )
     assert host.mode == "delegated"

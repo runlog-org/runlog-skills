@@ -20,3 +20,10 @@ class Host(Protocol):
     def uninstall(self) -> None:
         """Remove SKILL file and (for fallback mode) MCP server block from host settings."""
         ...
+
+    def post_install_hint(self) -> str | None:
+        """Optional one-line hint printed after a successful install.
+        Used for host-specific manual steps the installer can't auto-wire
+        (e.g. Aider's read: list — YAML list-of-strings, outside yamlc scope).
+        Default: None (no hint)."""
+        ...

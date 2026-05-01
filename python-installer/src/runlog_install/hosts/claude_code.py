@@ -52,6 +52,9 @@ class ClaudeCodeHost:
     # uninstall
     # ------------------------------------------------------------------
 
+    def post_install_hint(self) -> str | None:
+        return None
+
     def uninstall(self) -> None:
         """Remove SKILL.md and clean up empty parent directories."""
         skill_dest = self.SKILL_DEST
