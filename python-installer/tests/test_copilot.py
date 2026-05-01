@@ -14,6 +14,7 @@ from runlog_install.hosts.copilot import CopilotHost
 # 1. install writes SKILL (copilot-instructions.md)
 # ---------------------------------------------------------------------------
 
+
 def test_install_writes_skill(make_host, tmp_path):
     host = make_host(
         CopilotHost,
@@ -29,6 +30,7 @@ def test_install_writes_skill(make_host, tmp_path):
 # ---------------------------------------------------------------------------
 # 2. install writes MCP block with correct type, URL + Bearer header
 # ---------------------------------------------------------------------------
+
 
 def test_install_writes_mcp_block(make_host, tmp_path):
     host = make_host(
@@ -52,6 +54,7 @@ def test_install_writes_mcp_block(make_host, tmp_path):
 # 3. install preserves sibling MCP servers
 # ---------------------------------------------------------------------------
 
+
 def test_install_preserves_sibling_mcp_servers(make_host, tmp_path):
     host = make_host(
         CopilotHost,
@@ -62,11 +65,16 @@ def test_install_preserves_sibling_mcp_servers(make_host, tmp_path):
     # Pre-populate mcp.json with a sibling server.
     host.SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
     host.SETTINGS_PATH.write_text(
-        json.dumps({
-            "servers": {
-                "other-tool": {"type": "http", "url": "https://other.example.com/mcp"}
+        json.dumps(
+            {
+                "servers": {
+                    "other-tool": {
+                        "type": "http",
+                        "url": "https://other.example.com/mcp",
+                    }
+                }
             }
-        }),
+        ),
         encoding="utf-8",
     )
 
@@ -80,6 +88,7 @@ def test_install_preserves_sibling_mcp_servers(make_host, tmp_path):
 # ---------------------------------------------------------------------------
 # 4. install is idempotent — installing twice produces no duplicate
 # ---------------------------------------------------------------------------
+
 
 def test_install_idempotent(make_host, tmp_path):
     host = make_host(
@@ -107,6 +116,7 @@ def test_install_idempotent(make_host, tmp_path):
 # 5. install(api_key=None) raises ValueError
 # ---------------------------------------------------------------------------
 
+
 def test_install_requires_api_key(make_host, tmp_path):
     host = make_host(
         CopilotHost,
@@ -121,6 +131,7 @@ def test_install_requires_api_key(make_host, tmp_path):
 # 6. install preserves pre-existing JSONC comments
 # ---------------------------------------------------------------------------
 
+
 def test_install_preserves_jsonc_comments(make_host, tmp_path):
     host = make_host(
         CopilotHost,
@@ -130,13 +141,13 @@ def test_install_preserves_jsonc_comments(make_host, tmp_path):
 
     # Write a mcp.json that contains JSONC comments.
     jsonc_text = (
-        '{\n'
-        '  // keep this comment\n'
+        "{\n"
+        "  // keep this comment\n"
         '  "servers": {\n'
-        '    /* block comment */\n'
+        "    /* block comment */\n"
         '    "existing": { "type": "http", "url": "https://existing.example.com/mcp" }\n'
-        '  }\n'
-        '}\n'
+        "  }\n"
+        "}\n"
     )
     host.SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
     host.SETTINGS_PATH.write_text(jsonc_text, encoding="utf-8")
@@ -149,6 +160,7 @@ def test_install_preserves_jsonc_comments(make_host, tmp_path):
 
     # File must still be parseable as plain JSON after stripping comments.
     from runlog_install import jsonc as _jsonc
+
     data = _jsonc.parse(raw)
     assert "runlog" in data["servers"]
     assert "existing" in data["servers"]
@@ -157,6 +169,7 @@ def test_install_preserves_jsonc_comments(make_host, tmp_path):
 # ---------------------------------------------------------------------------
 # 7. uninstall removes SKILL file and MCP block
 # ---------------------------------------------------------------------------
+
 
 def test_uninstall_removes_skill_and_mcp_block(make_host, tmp_path):
     host = make_host(
@@ -168,7 +181,10 @@ def test_uninstall_removes_skill_and_mcp_block(make_host, tmp_path):
 
     # Add a sibling so the file is not left empty.
     data = json.loads(host.SETTINGS_PATH.read_text())
-    data["servers"]["sibling"] = {"type": "http", "url": "https://sibling.example.com/mcp"}
+    data["servers"]["sibling"] = {
+        "type": "http",
+        "url": "https://sibling.example.com/mcp",
+    }
     host.SETTINGS_PATH.write_text(json.dumps(data), encoding="utf-8")
 
     host.uninstall()
@@ -182,6 +198,7 @@ def test_uninstall_removes_skill_and_mcp_block(make_host, tmp_path):
 # ---------------------------------------------------------------------------
 # 8. uninstall when nothing installed is a no-op
 # ---------------------------------------------------------------------------
+
 
 def test_uninstall_missing_is_noop(make_host, tmp_path):
     host = make_host(
@@ -199,6 +216,7 @@ def test_uninstall_missing_is_noop(make_host, tmp_path):
 # 9. mode attribute is "fallback"
 # ---------------------------------------------------------------------------
 
+
 def test_mode_attribute(make_host, tmp_path):
     host = make_host(
         CopilotHost,
@@ -212,10 +230,14 @@ def test_mode_attribute(make_host, tmp_path):
 # 10. platform path branching — Linux vs macOS
 # ---------------------------------------------------------------------------
 
-@pytest.mark.parametrize("platform,expected_fragment", [
-    ("linux", ".config/Code/User/mcp.json"),
-    ("darwin", "Library/Application Support/Code/User/mcp.json"),
-])
+
+@pytest.mark.parametrize(
+    "platform,expected_fragment",
+    [
+        ("linux", ".config/Code/User/mcp.json"),
+        ("darwin", "Library/Application Support/Code/User/mcp.json"),
+    ],
+)
 def test_platform_path_branch(monkeypatch, tmp_path, platform, expected_fragment):
     """_vscode_user_dir() returns the correct path for each supported platform."""
     from runlog_install.hosts import copilot as copilot_module
@@ -233,6 +255,7 @@ def test_platform_path_branch(monkeypatch, tmp_path, platform, expected_fragment
 # 11. install concatenates all three skill sections into copilot-instructions.md
 # ---------------------------------------------------------------------------
 
+
 def test_install_concatenates_three_skill_sections(make_host, tmp_path):
     host = make_host(
         CopilotHost,
@@ -248,3 +271,35 @@ def test_install_concatenates_three_skill_sections(make_host, tmp_path):
     assert "Runlog read skill" in body
     assert "Runlog author skill" in body
     assert "Runlog harvest skill" in body
+
+
+# ---------------------------------------------------------------------------
+# 12. unsupported platform raises RuntimeError at install time (not import time)
+# ---------------------------------------------------------------------------
+
+
+def test_copilot_install_raises_on_unsupported_platform(monkeypatch, tmp_path):
+    """SETTINGS_PATH property raises RuntimeError on unsupported platforms.
+
+    Verifies Item 1 of refactor round 6: the platform check fires at
+    install/uninstall time rather than silently at import time.
+    """
+    from runlog_install.hosts import copilot as copilot_module
+
+    monkeypatch.setattr(copilot_module.sys, "platform", "win32")
+
+    # Module must be importable without error — the fix ensures no platform
+    # check at import time.
+    import importlib
+
+    importlib.reload(copilot_module)
+
+    host = copilot_module.CopilotHost()
+
+    # Accessing SETTINGS_PATH must raise RuntimeError (not silently fall back).
+    with pytest.raises(RuntimeError, match="unsupported platform"):
+        _ = host.SETTINGS_PATH
+
+    # install() must also surface the error, not silently write to a wrong path.
+    with pytest.raises(RuntimeError, match="unsupported platform"):
+        host.install(api_key="sk-runlog-test")

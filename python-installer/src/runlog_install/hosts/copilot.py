@@ -83,15 +83,23 @@ class CopilotHost:
     SKILL_DEST: Path = Path.home() / ".github" / "copilot-instructions.md"
 
     # VS Code user-scope MCP config: <user-data-dir>/mcp.json
-    # Platform-resolved at class body time; tests override via monkeypatch.
-    # Wrap in try/except so the module is importable on unsupported platforms
-    # (e.g. Windows CI) without raising at import time.
-    try:
-        SETTINGS_PATH: Path = _vscode_user_dir() / "mcp.json"
-    except RuntimeError:
-        SETTINGS_PATH: Path = Path.home() / ".config" / "Code" / "User" / "mcp.json"
-
+    # Resolved lazily on first access so the platform check fires at
+    # install/uninstall time rather than at import time.  Tests override by
+    # monkeypatching the class attribute directly (which shadows the property).
     _SKILL_SRC: Path = _VENDOR_DIR / "SKILL.md"
+
+    def __init__(self) -> None:
+        self._settings_path: Path | None = None
+
+    @property
+    def SETTINGS_PATH(self) -> Path:
+        if self._settings_path is None:
+            self._settings_path = _vscode_user_dir() / "mcp.json"
+        return self._settings_path
+
+    @SETTINGS_PATH.setter
+    def SETTINGS_PATH(self, value: Path) -> None:
+        self._settings_path = value
 
     @property
     def skill_sources(self) -> list[tuple[Path, Path, str]]:
