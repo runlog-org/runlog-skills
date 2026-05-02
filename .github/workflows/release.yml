@@ -39,8 +39,8 @@ concurrency:
 # can't ship malicious release logic. Update by bumping the SHA and
 # the trailing comment together.
 #
-#   actions/checkout@v4              -> 34e114876b0b11c390a56381ad16ebd13914f8d5
-#   softprops/action-gh-release@v2   -> 3bb12739c298aeb8a4eeaf626c5b8d85266b0e65
+#   actions/checkout@v6              -> de0fac2e4500dabe0009e67214ff5f5447ce83dd
+#   softprops/action-gh-release@v3   -> b4309332981a82ec1c5618f44dd2e27cc8bfbfda
 
 jobs:
   markdown-lint:
@@ -50,7 +50,7 @@ jobs:
     # off and why skills/ is excluded.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
 
       - uses: DavidAnson/markdownlint-cli2-action@v19
         with:
@@ -65,7 +65,7 @@ jobs:
     # for the rationale.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
 
       - uses: lycheeverse/lychee-action@v2
         with:
@@ -88,7 +88,7 @@ jobs:
     permissions:
       contents: write  # required for softprops/action-gh-release
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
           # Full history so generate_release_notes can compute the
           # commit/PR delta from the previous tag.
@@ -110,7 +110,7 @@ jobs:
           esac
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda  # v3
         with:
           # `name` defaults to the tag, `tag_name` defaults to the pushed
           # ref — both implicit. No `files:` block: the source archive
