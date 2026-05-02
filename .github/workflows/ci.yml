@@ -16,7 +16,7 @@ jobs:
   markdown-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Catches drift across the 9 vendor adapters: heading hierarchy,
       # list-style consistency, trailing whitespace, etc. Prose-style
@@ -27,7 +27,7 @@ jobs:
       # mirrors of canonical bodies under runlog-author/ and claude-code/
       # (cp-managed per README §Maintenance pattern). Linting them too
       # would just double-report any finding on the originals.
-      - uses: DavidAnson/markdownlint-cli2-action@v19
+      - uses: DavidAnson/markdownlint-cli2-action@v23
         with:
           globs: |
             **/*.md
@@ -37,7 +37,7 @@ jobs:
   dead-link-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # External dead-link gate. Allowlist patterns live in
       # .lycheeignore — github.com/runlog-org/runlog-docs/* (private
@@ -61,9 +61,9 @@ jobs:
   installer-smoke:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           # No cache: installer/ has zero runtime + dev deps, so there is
