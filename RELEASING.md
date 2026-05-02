@@ -9,7 +9,8 @@ gates [`ci.yml`](.github/workflows/ci.yml) applies on push/PR
 GitHub Release with auto-generated notes. There are no build artefacts
 beyond the source archive GitHub auto-attaches.
 
-<!-- TODO link runlog-docs/13-release-trains.md once T4 lands -->
+See [`runlog-docs/13-release-trains.md`](https://github.com/runlog-org/runlog-docs/blob/main/13-release-trains.md)
+for the path-scoped tag convention and the full list of components.
 
 ## Cut a release
 
@@ -18,10 +19,10 @@ beyond the source archive GitHub auto-attaches.
        git checkout main && git pull --ff-only
 
 2. Pick a version. Tag shape is `skills/vX.Y.Z` — the `skills/` path
-   scope is part of the release-train discipline (see the runlog-docs
-   convention page once T4 lands). Use semver (`skills/v0.MINOR.PATCH`
-   while pre-1.0). See [Versioning policy](#versioning-policy) below
-   for the bump rules.
+   scope is part of the release-train discipline (see
+   [`runlog-docs/13-release-trains.md`](https://github.com/runlog-org/runlog-docs/blob/main/13-release-trains.md)).
+   Use semver (`skills/v0.MINOR.PATCH` while pre-1.0). See
+   [Versioning policy](#versioning-policy) below for the bump rules.
 
 3. Tag and push:
 
